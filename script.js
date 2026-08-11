@@ -1,29 +1,27 @@
 /* =========================================================
-ORACLE GADGET
-COMPLETE STOREFRONT SYSTEM
+   ORACLE GADGET
+   COMPLETE STOREFRONT SYSTEM
 
-FLOW:
-
-PRODUCT
-↓
-ADD TO CART
-↓
-CART
-↓
-CUSTOMER DETAILS
-↓
-CUSTOMERS TABLE
-↓
-ORDERS TABLE
-↓
-ORDER_ITEMS TABLE
-↓
-WHATSAPP
+   PRODUCT
+   ↓
+   ADD TO CART
+   ↓
+   CART
+   ↓
+   CUSTOMER DETAILS
+   ↓
+   CUSTOMERS TABLE
+   ↓
+   ORDERS TABLE
+   ↓
+   ORDER_ITEMS TABLE
+   ↓
+   WHATSAPP
 ========================================================= */
 
 
 /* =========================================================
-SUPABASE
+   SUPABASE
 ========================================================= */
 
 const SUPABASE_URL =
@@ -40,7 +38,7 @@ const supabaseClient =
 
 
 /* =========================================================
-BUSINESS INFORMATION
+   BUSINESS INFORMATION
 ========================================================= */
 
 const BUSINESS = {
@@ -54,14 +52,14 @@ const BUSINESS = {
 
 
 /* =========================================================
-STORAGE
+   STORAGE
 ========================================================= */
 
 const STORAGE_BUCKET = "product-images";
 
 
 /* =========================================================
-COLORS
+   COLORS
 ========================================================= */
 
 const AVAILABLE_COLORS = [
@@ -81,7 +79,7 @@ const AVAILABLE_COLORS = [
 
 
 /* =========================================================
-APPLICATION STATE
+   APPLICATION STATE
 ========================================================= */
 
 let products = [];
@@ -98,7 +96,7 @@ let cart = [];
 
 
 /* =========================================================
-DOM
+   DOM
 ========================================================= */
 
 const productsGrid =
@@ -157,7 +155,7 @@ const yearElement =
 
 
 /* =========================================================
-PRICE FORMAT
+   PRICE FORMAT
 ========================================================= */
 
 function formatPrice(price) {
@@ -172,11 +170,12 @@ function formatPrice(price) {
     ).format(
         Number(price) || 0
     );
+
 }
 
 
 /* =========================================================
-STORAGE PATH CLEANER
+   STORAGE PATH CLEANER
 ========================================================= */
 
 function cleanStoragePath(imagePath) {
@@ -202,11 +201,12 @@ function cleanStoragePath(imagePath) {
     }
 
     return cleanPath;
+
 }
 
 
 /* =========================================================
-STORAGE URL
+   STORAGE URL
 ========================================================= */
 
 function createStorageUrl(imagePath) {
@@ -243,11 +243,12 @@ function createStorageUrl(imagePath) {
         `${STORAGE_BUCKET}/` +
         `${encodedPath}`
     );
+
 }
 
 
 /* =========================================================
-IMAGE CANDIDATES
+   IMAGE CANDIDATES
 ========================================================= */
 
 function getProductImageCandidates(imagePath) {
@@ -308,11 +309,12 @@ function getProductImageCandidates(imagePath) {
             candidates.filter(Boolean)
         )
     ];
+
 }
 
 
 /* =========================================================
-IMAGE FALLBACK
+   IMAGE FALLBACK
 ========================================================= */
 
 function setImageWithFallbacks(
@@ -375,16 +377,17 @@ function setImageWithFallbacks(
             );
 
             console.error(
-                "ORACLE GADGET: Image failed:",
+                "ORACLE GADGET IMAGE FAILED:",
                 imagePath
             );
 
         };
+
 }
 
 
 /* =========================================================
-ESCAPE HTML
+   ESCAPE HTML
 ========================================================= */
 
 function escapeHTML(value) {
@@ -400,11 +403,12 @@ function escapeHTML(value) {
         );
 
     return element.innerHTML;
+
 }
 
 
 /* =========================================================
-ESCAPE ATTRIBUTE
+   ESCAPE ATTRIBUTE
 ========================================================= */
 
 function escapeAttribute(value) {
@@ -428,11 +432,12 @@ function escapeAttribute(value) {
             />/g,
             "&gt;"
         );
+
 }
 
 
 /* =========================================================
-NORMALIZE PRODUCT
+   NORMALIZE PRODUCT
 ========================================================= */
 
 function normalizeProduct(product) {
@@ -495,11 +500,12 @@ function normalizeProduct(product) {
             ""
 
     };
+
 }
 
 
 /* =========================================================
-LOAD PRODUCTS
+   LOAD PRODUCTS
 ========================================================= */
 
 async function loadProducts() {
@@ -550,11 +556,12 @@ async function loadProducts() {
         showDatabaseError();
 
     }
+
 }
 
 
 /* =========================================================
-LOADING
+   LOADING
 ========================================================= */
 
 function showLoading() {
@@ -568,11 +575,12 @@ function showLoading() {
             <p>Loading products...</p>
         </div>
     `;
+
 }
 
 
 /* =========================================================
-DATABASE ERROR
+   DATABASE ERROR
 ========================================================= */
 
 function showDatabaseError() {
@@ -589,11 +597,12 @@ function showDatabaseError() {
             </p>
         </div>
     `;
+
 }
 
 
 /* =========================================================
-RENDER PRODUCTS
+   RENDER PRODUCTS
 ========================================================= */
 
 function renderProducts() {
@@ -690,18 +699,21 @@ function renderProducts() {
 
     filteredProducts.forEach(
         product => {
+
             createProductCard(
                 product
             );
+
         }
     );
 
     attachProductButtons();
+
 }
 
 
 /* =========================================================
-PRODUCT CARD
+   PRODUCT CARD
 ========================================================= */
 
 function createProductCard(product) {
@@ -800,11 +812,12 @@ function createProductCard(product) {
         product.image,
         product.name
     );
+
 }
 
 
 /* =========================================================
-PRODUCT BUTTONS
+   PRODUCT BUTTONS
 ========================================================= */
 
 function attachProductButtons() {
@@ -842,7 +855,7 @@ function attachProductButtons() {
                     if (!product) {
 
                         console.error(
-                            "Product not found:",
+                            "PRODUCT NOT FOUND:",
                             productId
                         );
 
@@ -859,11 +872,12 @@ function attachProductButtons() {
 
         }
     );
+
 }
 
 
 /* =========================================================
-COLOR SELECTOR
+   COLOR SELECTOR
 ========================================================= */
 
 function createColorSelector(product) {
@@ -980,11 +994,12 @@ function createColorSelector(product) {
     );
 
     return wrapper;
+
 }
 
 
 /* =========================================================
-OPEN PRODUCT MODAL
+   OPEN PRODUCT MODAL
 ========================================================= */
 
 function openProductModal(product) {
@@ -1103,11 +1118,12 @@ function openProductModal(product) {
 
     document.body.style.overflow =
         "hidden";
+
 }
 
 
 /* =========================================================
-CLOSE PRODUCT MODAL
+   CLOSE PRODUCT MODAL
 ========================================================= */
 
 function closeProductModal() {
@@ -1139,11 +1155,12 @@ function closeProductModal() {
     if (selector) {
         selector.remove();
     }
+
 }
 
 
 /* =========================================================
-CART STORAGE
+   CART STORAGE
 ========================================================= */
 
 function saveCart() {
@@ -1160,16 +1177,17 @@ function saveCart() {
     catch (error) {
 
         console.error(
-            "Could not save cart:",
+            "CART SAVE ERROR:",
             error
         );
 
     }
+
 }
 
 
 /* =========================================================
-LOAD CART
+   LOAD CART
 ========================================================= */
 
 function loadCart() {
@@ -1182,8 +1200,11 @@ function loadCart() {
             );
 
         if (!saved) {
+
             cart = [];
+
             return;
+
         }
 
         const parsed =
@@ -1201,18 +1222,19 @@ function loadCart() {
     catch (error) {
 
         console.error(
-            "Could not load cart:",
+            "CART LOAD ERROR:",
             error
         );
 
         cart = [];
 
     }
+
 }
 
 
 /* =========================================================
-CART TOTAL
+   CART TOTAL
 ========================================================= */
 
 function getCartTotal() {
@@ -1241,11 +1263,12 @@ function getCartTotal() {
         },
         0
     );
+
 }
 
 
 /* =========================================================
-CART COUNT
+   CART COUNT
 ========================================================= */
 
 function getCartCount() {
@@ -1268,11 +1291,12 @@ function getCartCount() {
         },
         0
     );
+
 }
 
 
 /* =========================================================
-ADD TO CART
+   ADD TO CART
 ========================================================= */
 
 function addToCart(
@@ -1297,6 +1321,7 @@ function addToCart(
         );
 
         return;
+
     }
 
     const chosenColor =
@@ -1366,11 +1391,12 @@ function addToCart(
     closeProductModal();
 
     showCart();
+
 }
 
 
 /* =========================================================
-REMOVE CART ITEM
+   REMOVE CART ITEM
 ========================================================= */
 
 function removeFromCart(index) {
@@ -1392,11 +1418,12 @@ function removeFromCart(index) {
     updateCartButton();
 
     showCart();
+
 }
 
 
 /* =========================================================
-CHANGE CART QUANTITY
+   CHANGE CART QUANTITY
 ========================================================= */
 
 function changeCartQuantity(
@@ -1404,9 +1431,7 @@ function changeCartQuantity(
     change
 ) {
 
-    if (
-        !cart[index]
-    ) {
+    if (!cart[index]) {
         return;
     }
 
@@ -1430,11 +1455,12 @@ function changeCartQuantity(
     updateCartButton();
 
     showCart();
+
 }
 
 
 /* =========================================================
-CART BUTTON
+   CART BUTTON
 ========================================================= */
 
 let cartButton = null;
@@ -1502,11 +1528,12 @@ function createCartButton() {
     );
 
     updateCartButton();
+
 }
 
 
 /* =========================================================
-UPDATE CART BUTTON
+   UPDATE CART BUTTON
 ========================================================= */
 
 function updateCartButton() {
@@ -1517,11 +1544,12 @@ function updateCartButton() {
 
     cartButton.textContent =
         `Cart ${getCartCount()}`;
+
 }
 
 
 /* =========================================================
-CART MODAL
+   CART MODAL
 ========================================================= */
 
 let cartModal = null;
@@ -1622,10 +1650,14 @@ function createCartModal() {
             "closeOracleCart"
         );
 
-    closeButton.addEventListener(
-        "click",
-        closeCart
-    );
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeCart
+        );
+
+    }
 
     cartModal.addEventListener(
         "click",
@@ -1642,11 +1674,12 @@ function createCartModal() {
 
         }
     );
+
 }
 
 
 /* =========================================================
-SHOW CART
+   SHOW CART
 ========================================================= */
 
 function showCart() {
@@ -1683,12 +1716,14 @@ function showCart() {
                     text-align:center;
                 "
             >
+
                 <h3>Your cart is empty</h3>
 
                 <p>
                     Add an iPhone to your cart
                     before placing an order.
                 </p>
+
             </div>
 
         `;
@@ -1846,11 +1881,13 @@ function showCart() {
                     margin:20px 0;
                 "
             >
+
                 <span>Total</span>
 
                 <span>
                     ${formatPrice(total)}
                 </span>
+
             </div>
 
             <button
@@ -1943,11 +1980,12 @@ function showCart() {
 
     document.body.style.overflow =
         "hidden";
+
 }
 
 
 /* =========================================================
-CLOSE CART
+   CLOSE CART
 ========================================================= */
 
 function closeCart() {
@@ -1961,11 +1999,12 @@ function closeCart() {
 
     document.body.style.overflow =
         "";
+
 }
 
 
 /* =========================================================
-CUSTOMER MODAL
+   CUSTOMER MODAL
 ========================================================= */
 
 let customerModal = null;
@@ -2184,11 +2223,12 @@ function createCustomerModal() {
         );
 
     }
+
 }
 
 
 /* =========================================================
-OPEN CUSTOMER DETAILS
+   OPEN CUSTOMER DETAILS
 ========================================================= */
 
 function openCustomerDetails() {
@@ -2214,11 +2254,12 @@ function openCustomerDetails() {
 
     document.body.style.overflow =
         "hidden";
+
 }
 
 
 /* =========================================================
-CLOSE CUSTOMER DETAILS
+   CLOSE CUSTOMER DETAILS
 ========================================================= */
 
 function closeCustomerDetails() {
@@ -2232,11 +2273,12 @@ function closeCustomerDetails() {
 
     document.body.style.overflow =
         "";
+
 }
 
 
 /* =========================================================
-SHOW ORDER MESSAGE
+   SHOW ORDER MESSAGE
 ========================================================= */
 
 function showOrderMessage(
@@ -2275,11 +2317,12 @@ function showOrderMessage(
             "green";
 
     }
+
 }
 
 
 /* =========================================================
-GENERATE ORDER REFERENCE
+   GENERATE ORDER REFERENCE
 ========================================================= */
 
 function generateOrderReference() {
@@ -2316,11 +2359,12 @@ function generateOrderReference() {
     return (
         `OG-${year}${month}${day}-${random}`
     );
+
 }
 
 
 /* =========================================================
-NORMALIZE PHONE
+   NORMALIZE PHONE
 ========================================================= */
 
 function normalizePhone(phone) {
@@ -2355,11 +2399,18 @@ function normalizePhone(phone) {
     }
 
     return value;
+
 }
 
 
 /* =========================================================
-FIND OR CREATE CUSTOMER
+   FIND OR CREATE CUSTOMER
+
+   IMPORTANT:
+   NO .single()
+
+   This avoids the 406 error caused by
+   PostgREST object-return negotiation.
 ========================================================= */
 
 async function findOrCreateCustomer(
@@ -2372,6 +2423,19 @@ async function findOrCreateCustomer(
         normalizePhone(
             phone
         );
+
+    if (!normalizedPhone) {
+
+        throw new Error(
+            "Invalid customer phone number."
+        );
+
+    }
+
+
+    /* =====================================================
+       SEARCH EXISTING CUSTOMER
+    ===================================================== */
 
     const {
         data: existingCustomers,
@@ -2395,12 +2459,24 @@ async function findOrCreateCustomer(
             searchError
         );
 
-        throw searchError;
+        throw new Error(
+            `Customer search failed: ${
+                searchError.message ||
+                "Unknown database error"
+            }`
+        );
 
     }
 
+
+    /* =====================================================
+       EXISTING CUSTOMER
+    ===================================================== */
+
     if (
-        existingCustomers &&
+        Array.isArray(
+            existingCustomers
+        ) &&
         existingCustomers.length > 0
     ) {
 
@@ -2408,7 +2484,7 @@ async function findOrCreateCustomer(
             existingCustomers[0];
 
         const {
-            data: updatedCustomer,
+            data: updatedCustomers,
             error: updateError
         } =
             await supabaseClient
@@ -2432,23 +2508,69 @@ async function findOrCreateCustomer(
                     "id",
                     customer.id
                 )
-                .select()
-                .single();
+                .select(
+                    "id, full_name, phone, delivery_address"
+                );
 
         if (updateError) {
-            throw updateError;
+
+            console.error(
+                "CUSTOMER UPDATE ERROR:",
+                updateError
+            );
+
+            throw new Error(
+                `Customer update failed: ${
+                    updateError.message ||
+                    "Unknown database error"
+                }`
+            );
+
         }
 
-        return updatedCustomer;
+        /*
+         * If RLS prevents the updated row from being returned,
+         * we still know the customer ID and the new values.
+         *
+         * Therefore we do not depend on .single().
+         */
+
+        if (
+            Array.isArray(
+                updatedCustomers
+            ) &&
+            updatedCustomers.length > 0
+        ) {
+
+            return updatedCustomers[0];
+
+        }
+
+        return {
+
+            id:
+                customer.id,
+
+            full_name:
+                fullName,
+
+            phone:
+                normalizedPhone,
+
+            delivery_address:
+                deliveryAddress
+
+        };
+
     }
 
 
     /* =====================================================
-    NEW CUSTOMER
+       CREATE NEW CUSTOMER
     ===================================================== */
 
     const {
-        data: newCustomer,
+        data: newCustomers,
         error: insertError
     } =
         await supabaseClient
@@ -2465,8 +2587,9 @@ async function findOrCreateCustomer(
                     deliveryAddress
 
             })
-            .select()
-            .single();
+            .select(
+                "id, full_name, phone, delivery_address"
+            );
 
     if (insertError) {
 
@@ -2475,22 +2598,106 @@ async function findOrCreateCustomer(
             insertError
         );
 
-        throw insertError;
+        throw new Error(
+            `Customer creation failed: ${
+                insertError.message ||
+                "Unknown database error"
+            }`
+        );
 
     }
 
-    return newCustomer;
+
+    /*
+     * Normal case:
+     * Supabase returns the inserted customer.
+     */
+
+    if (
+        Array.isArray(
+            newCustomers
+        ) &&
+        newCustomers.length > 0
+    ) {
+
+        return newCustomers[0];
+
+    }
+
+
+    /*
+     * If INSERT succeeded but RETURNING is hidden by RLS,
+     * retrieve the customer using the normalized phone.
+     */
+
+    const {
+        data: fetchedCustomers,
+        error: fetchError
+    } =
+        await supabaseClient
+            .from("customers")
+            .select(
+                "id, full_name, phone, delivery_address"
+            )
+            .eq(
+                "phone",
+                normalizedPhone
+            )
+            .limit(1);
+
+    if (fetchError) {
+
+        console.error(
+            "CUSTOMER REFETCH ERROR:",
+            fetchError
+        );
+
+        throw new Error(
+            "Customer was created, but its ID could not be retrieved."
+        );
+
+    }
+
+    if (
+        !Array.isArray(
+            fetchedCustomers
+        ) ||
+        fetchedCustomers.length === 0
+    ) {
+
+        throw new Error(
+            "Customer was created, but no customer record could be found."
+        );
+
+    }
+
+    return fetchedCustomers[0];
+
 }
 
 
 /* =========================================================
-CREATE ORDER
+   CREATE ORDER
+
+   IMPORTANT:
+   NO .single()
 ========================================================= */
 
 async function createOrder(
     customer,
     deliveryAddress
 ) {
+
+    if (
+        !customer ||
+        !customer.id
+    ) {
+
+        throw new Error(
+            "Customer ID is missing."
+        );
+
+    }
 
     const orderReference =
         generateOrderReference();
@@ -2517,8 +2724,13 @@ async function createOrder(
 
     };
 
+
+    /* =====================================================
+       INSERT ORDER
+    ===================================================== */
+
     const {
-        data: order,
+        data: insertedOrders,
         error: orderError
     } =
         await supabaseClient
@@ -2526,8 +2738,9 @@ async function createOrder(
             .insert(
                 orderData
             )
-            .select()
-            .single();
+            .select(
+                "id, customer_id, status, total, order_reference, delivery_address"
+            );
 
     if (orderError) {
 
@@ -2536,21 +2749,109 @@ async function createOrder(
             orderError
         );
 
-        throw orderError;
+        throw new Error(
+            `Order creation failed: ${
+                orderError.message ||
+                "Unknown database error"
+            }`
+        );
 
     }
 
-    return order;
+
+    /* =====================================================
+       NORMAL RETURN
+    ===================================================== */
+
+    if (
+        Array.isArray(
+            insertedOrders
+        ) &&
+        insertedOrders.length > 0
+    ) {
+
+        return insertedOrders[0];
+
+    }
+
+
+    /* =====================================================
+       FALLBACK:
+       FETCH USING UNIQUE ORDER REFERENCE
+    ===================================================== */
+
+    const {
+        data: fetchedOrders,
+        error: fetchOrderError
+    } =
+        await supabaseClient
+            .from("orders")
+            .select(
+                "id, customer_id, status, total, order_reference, delivery_address"
+            )
+            .eq(
+                "order_reference",
+                orderReference
+            )
+            .limit(1);
+
+    if (fetchOrderError) {
+
+        console.error(
+            "ORDER REFETCH ERROR:",
+            fetchOrderError
+        );
+
+        throw new Error(
+            "Order was created, but its ID could not be retrieved."
+        );
+
+    }
+
+    if (
+        !Array.isArray(
+            fetchedOrders
+        ) ||
+        fetchedOrders.length === 0
+    ) {
+
+        throw new Error(
+            "Order was created, but no order record could be found."
+        );
+
+    }
+
+    return fetchedOrders[0];
+
 }
 
 
 /* =========================================================
-CREATE ORDER ITEMS
+   CREATE ORDER ITEMS
 ========================================================= */
 
 async function createOrderItems(
     orderId
 ) {
+
+    if (!orderId) {
+
+        throw new Error(
+            "Order ID is missing."
+        );
+
+    }
+
+    if (
+        !Array.isArray(cart) ||
+        cart.length === 0
+    ) {
+
+        throw new Error(
+            "Cart is empty."
+        );
+
+    }
 
     const items =
         cart.map(
@@ -2598,6 +2899,7 @@ async function createOrderItems(
             }
         );
 
+
     const {
         data,
         error
@@ -2616,16 +2918,22 @@ async function createOrderItems(
             error
         );
 
-        throw error;
+        throw new Error(
+            `Order items creation failed: ${
+                error.message ||
+                "Unknown database error"
+            }`
+        );
 
     }
 
     return data;
+
 }
 
 
 /* =========================================================
-WHATSAPP MESSAGE
+   WHATSAPP MESSAGE
 ========================================================= */
 
 function createOrderWhatsAppMessage(
@@ -2640,16 +2948,25 @@ function createOrderWhatsAppMessage(
         `NEW ORDER\n\n`;
 
     message +=
-        `Order ID: ${order.order_reference || order.id}\n`;
+        `Order ID: ${
+            order.order_reference ||
+            order.id
+        }\n`;
 
     message +=
-        `Customer: ${customer.full_name}\n`;
+        `Customer: ${
+            customer.full_name
+        }\n`;
 
     message +=
-        `Phone: ${customer.phone}\n`;
+        `Phone: ${
+            customer.phone
+        }\n`;
 
     message +=
-        `Delivery Address: ${customer.delivery_address}\n\n`;
+        `Delivery Address: ${
+            customer.delivery_address
+        }\n\n`;
 
     message +=
         `ITEMS:\n`;
@@ -2673,34 +2990,48 @@ function createOrderWhatsAppMessage(
                 );
 
             message +=
-                `${index + 1}. ${item.product_name}\n`;
+                `${index + 1}. ${
+                    item.product_name
+                }\n`;
 
             message +=
-                `Storage: ${item.storage}\n`;
+                `Storage: ${
+                    item.storage
+                }\n`;
 
             message +=
-                `Color: ${item.color}\n`;
+                `Color: ${
+                    item.color
+                }\n`;
 
             message +=
-                `Quantity: ${item.quantity}\n`;
+                `Quantity: ${
+                    item.quantity
+                }\n`;
 
             message +=
-                `Unit Price: ${formatPrice(
-                    item.unit_price
-                )}\n`;
+                `Unit Price: ${
+                    formatPrice(
+                        item.unit_price
+                    )
+                }\n`;
 
             message +=
-                `Subtotal: ${formatPrice(
-                    subtotal
-                )}\n\n`;
+                `Subtotal: ${
+                    formatPrice(
+                        subtotal
+                    )
+                }\n\n`;
 
         }
     );
 
     message +=
-        `TOTAL: ${formatPrice(
-            getCartTotal()
-        )}\n\n`;
+        `TOTAL: ${
+            formatPrice(
+                getCartTotal()
+            )
+        }\n\n`;
 
     message +=
         `Status: Pending`;
@@ -2708,12 +3039,12 @@ function createOrderWhatsAppMessage(
     return encodeURIComponent(
         message
     );
+
 }
 
 
 /* =========================================================
-PLACE ORDER
-FIXED CHECKOUT FLOW
+   PLACE ORDER
 ========================================================= */
 
 async function handlePlaceOrder(
@@ -2733,6 +3064,7 @@ async function handlePlaceOrder(
         );
 
         return;
+
     }
 
     const fullNameInput =
@@ -2767,6 +3099,7 @@ async function handlePlaceOrder(
         );
 
         return;
+
     }
 
     const fullName =
@@ -2790,11 +3123,12 @@ async function handlePlaceOrder(
         );
 
         return;
+
     }
 
 
     /* =====================================================
-    PREVENT DOUBLE SUBMISSION
+       PREVENT DOUBLE SUBMISSION
     ===================================================== */
 
     placeOrderButton.disabled =
@@ -2812,9 +3146,13 @@ async function handlePlaceOrder(
     try {
 
         /* =================================================
-        STEP 1
-        FIND OR CREATE CUSTOMER
+           STEP 1
+           FIND OR CREATE CUSTOMER
         ================================================= */
+
+        console.log(
+            "ORACLE CHECKOUT: Finding/creating customer..."
+        );
 
         const customer =
             await findOrCreateCustomer(
@@ -2824,15 +3162,31 @@ async function handlePlaceOrder(
             );
 
         console.log(
-            "CUSTOMER CREATED/FOUND:",
+            "ORACLE CHECKOUT: CUSTOMER:",
             customer
         );
 
 
+        if (
+            !customer ||
+            !customer.id
+        ) {
+
+            throw new Error(
+                "Customer was not returned with a valid ID."
+            );
+
+        }
+
+
         /* =================================================
-        STEP 2
-        CREATE ORDER
+           STEP 2
+           CREATE ORDER
         ================================================= */
+
+        console.log(
+            "ORACLE CHECKOUT: Creating order..."
+        );
 
         const order =
             await createOrder(
@@ -2841,24 +3195,45 @@ async function handlePlaceOrder(
             );
 
         console.log(
-            "ORDER CREATED:",
+            "ORACLE CHECKOUT: ORDER:",
             order
         );
 
 
+        if (
+            !order ||
+            !order.id
+        ) {
+
+            throw new Error(
+                "Order was not returned with a valid ID."
+            );
+
+        }
+
+
         /* =================================================
-        STEP 3
-        CREATE ORDER ITEMS
+           STEP 3
+           CREATE ORDER ITEMS
         ================================================= */
+
+        console.log(
+            "ORACLE CHECKOUT: Creating order items..."
+        );
 
         await createOrderItems(
             order.id
         );
 
 
+        console.log(
+            "ORACLE CHECKOUT: ORDER ITEMS CREATED"
+        );
+
+
         /* =================================================
-        STEP 4
-        BUILD WHATSAPP MESSAGE
+           STEP 4
+           BUILD WHATSAPP MESSAGE
         ================================================= */
 
         const message =
@@ -2872,9 +3247,8 @@ async function handlePlaceOrder(
 
 
         /* =================================================
-        STEP 5
-        CLEAR CART ONLY AFTER
-        SUPABASE SUCCESS
+           STEP 5
+           CLEAR CART
         ================================================= */
 
         cart = [];
@@ -2885,16 +3259,16 @@ async function handlePlaceOrder(
 
 
         /* =================================================
-        STEP 6
-        CLOSE CUSTOMER MODAL
+           STEP 6
+           CLOSE CUSTOMER MODAL
         ================================================= */
 
         closeCustomerDetails();
 
 
         /* =================================================
-        STEP 7
-        SUCCESS MESSAGE
+           STEP 7
+           SUCCESS
         ================================================= */
 
         alert(
@@ -2906,12 +3280,8 @@ async function handlePlaceOrder(
 
 
         /* =================================================
-        STEP 8
-        NAVIGATE CURRENT TAB TO WHATSAPP
-
-        IMPORTANT:
-        Do NOT use window.open().
-        Current-page navigation avoids popup blocking.
+           STEP 8
+           WHATSAPP
         ================================================= */
 
         window.location.href =
@@ -2926,18 +3296,16 @@ async function handlePlaceOrder(
             error
         );
 
+        console.error(
+            "ORDER ERROR MESSAGE:",
+            error?.message
+        );
+
         showOrderMessage(
+            error?.message ||
             "Unable to place order. Please try again.",
             "error"
         );
-
-
-        /* =================================================
-        IMPORTANT
-
-        Cart is intentionally NOT cleared if
-        any Supabase operation fails.
-        ================================================= */
 
     }
 
@@ -2950,11 +3318,12 @@ async function handlePlaceOrder(
             "Place Order";
 
     }
+
 }
 
 
 /* =========================================================
-SEARCH
+   SEARCH
 ========================================================= */
 
 if (searchInput) {
@@ -2975,7 +3344,7 @@ if (searchInput) {
 
 
 /* =========================================================
-FILTER BUTTONS
+   FILTER BUTTONS
 ========================================================= */
 
 filterButtons.forEach(
@@ -3012,7 +3381,7 @@ filterButtons.forEach(
 
 
 /* =========================================================
-CLOSE PRODUCT MODAL
+   CLOSE PRODUCT MODAL
 ========================================================= */
 
 if (modalClose) {
@@ -3026,7 +3395,7 @@ if (modalClose) {
 
 
 /* =========================================================
-PRODUCT MODAL OVERLAY
+   PRODUCT MODAL OVERLAY
 ========================================================= */
 
 if (modalOverlay) {
@@ -3040,7 +3409,7 @@ if (modalOverlay) {
 
 
 /* =========================================================
-ESCAPE KEY
+   ESCAPE KEY
 ========================================================= */
 
 document.addEventListener(
@@ -3090,7 +3459,7 @@ document.addEventListener(
 
 
 /* =========================================================
-MOBILE MENU
+   MOBILE MENU
 ========================================================= */
 
 if (
@@ -3145,11 +3514,12 @@ if (
 
         }
     );
+
 }
 
 
 /* =========================================================
-SNAPCHAT
+   SNAPCHAT
 ========================================================= */
 
 const snapchatLink =
@@ -3166,16 +3536,17 @@ if (snapchatLink) {
             event.preventDefault();
 
             alert(
-                "Snapchat: militaryoracele / oracle_gadget"
+                "Snapchat: militaryorace / oracle_gadget"
             );
 
         }
     );
+
 }
 
 
 /* =========================================================
-YEAR
+   YEAR
 ========================================================= */
 
 if (yearElement) {
@@ -3188,7 +3559,7 @@ if (yearElement) {
 
 
 /* =========================================================
-INITIALIZE CART
+   INITIALIZE CART
 ========================================================= */
 
 function initializeCart() {
@@ -3200,11 +3571,12 @@ function initializeCart() {
     createCartModal();
 
     createCustomerModal();
+
 }
 
 
 /* =========================================================
-INITIALIZE WEBSITE
+   INITIALIZE WEBSITE
 ========================================================= */
 
 async function initializeWebsite() {
@@ -3212,11 +3584,12 @@ async function initializeWebsite() {
     initializeCart();
 
     await loadProducts();
+
 }
 
 
 /* =========================================================
-START
+   START
 ========================================================= */
 
 if (
