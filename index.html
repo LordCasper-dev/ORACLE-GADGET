@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="ORACLE GADGET — Premium iPhones and gadgets in Akure, Ondo State."
+    >
+
+    <meta
+        name="theme-color"
+        content="#ffffff"
+    >
+
+    <title>ORACLE GADGET | Premium iPhones</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="header">
+
+        <div class="nav-container">
+
+            <a
+                href="#home"
+                class="logo-link"
+                aria-label="ORACLE GADGET Home"
+            >
+
+                <img
+                    src="oraimages/logo.jpg"
+                    alt="ORACLE GADGET"
+                    class="site-logo"
+                >
+
+            </a>
+
+
+            <nav
+                class="desktop-nav"
+                aria-label="Main navigation"
+            >
+
+                <a href="#home">Home</a>
+
+                <a href="#shop">iPhones</a>
+
+                <a href="#about">About</a>
+
+                <a href="#contact">Contact</a>
+
+            </nav>
+
+
+            <button
+                class="menu-button"
+                id="menuButton"
+                type="button"
+                aria-label="Open menu"
+                aria-expanded="false"
+            >
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </button>
+
+        </div>
+
+
+        <nav
+            class="mobile-nav"
+            id="mobileNav"
+            aria-label="Mobile navigation"
+        >
+
+            <a href="#home">Home</a>
+
+            <a href="#shop">iPhones</a>
+
+            <a href="#about">About</a>
+
+            <a href="#contact">Contact</a>
+
+        </nav>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main>
+
+
+        <!-- =================================================
+             HERO
+        ================================================== -->
+
+        <section
+            class="hero"
+            id="home"
+        >
+
+            <div class="hero-content">
+
+                <p class="eyebrow">
+                    ORACLE GADGET
+                </p>
+
+
+                <h1>
+                    Your next
+                    <span>iPhone.</span>
+                </h1>
+
+
+                <p class="hero-text">
+
+                    Premium iPhones and gadgets available in
+                    Akure, Ondo State. Find the device that
+                    fits you.
+
+                </p>
+
+
+                <div class="hero-buttons">
+
+                    <a
+                        href="#shop"
+                        class="btn btn-black"
+                    >
+                        Shop iPhones
+                    </a>
+
+
+                    <a
+                        href="https://wa.me/2348129803111"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-outline"
+                    >
+                        Chat on WhatsApp
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-image-wrapper">
+
+                <img
+                    src="oraimages/description.jpg"
+                    alt="ORACLE GADGET iPhones"
+                    class="hero-image"
+                >
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             TRUST BAR
+        ================================================== -->
+
+        <section class="trust-section">
+
+            <div class="trust-item">
+
+                <strong>
+                    Premium Devices
+                </strong>
+
+                <span>
+                    Quality phones available
+                </span>
+
+            </div>
+
+
+            <div class="trust-item">
+
+                <strong>
+                    Multiple Models
+                </strong>
+
+                <span>
+                    Choose from our collection
+                </span>
+
+            </div>
+
+
+            <div class="trust-item">
+
+                <strong>
+                    Akure, Ondo
+                </strong>
+
+                <span>
+                    Local gadget vendor
+                </span>
+
+            </div>
+
+
+            <div class="trust-item">
+
+                <strong>
+                    WhatsApp Orders
+                </strong>
+
+                <span>
+                    Easy direct ordering
+                </span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SHOP
+        ================================================== -->
+
+        <section
+            class="shop-section"
+            id="shop"
+        >
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">
+                        OUR COLLECTION
+                    </p>
+
+                    <h2>
+                        Find your
+                        <span>iPhone.</span>
+                    </h2>
+
+                </div>
+
+
+                <p>
+
+                    Browse available models and contact
+                    ORACLE GADGET directly to order.
+
+                </p>
+
+            </div>
+
+
+
+            <!-- SEARCH + FILTERS -->
+
+            <div class="shop-controls">
+
+
+                <div class="search-box">
+
+                    <span aria-hidden="true">
+                        ⌕
+                    </span>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search iPhone..."
+                        autocomplete="off"
+                        aria-label="Search iPhone"
+                    >
+
+                </div>
+
+
+
+                <div class="filter-buttons">
+
+                    <button
+                        class="filter-btn active"
+                        data-filter="all"
+                        type="button"
+                    >
+                        All
+                    </button>
+
+
+                    <button
+                        class="filter-btn"
+                        data-filter="available"
+                        type="button"
+                    >
+                        Available
+                    </button>
+
+
+                    <button
+                        class="filter-btn"
+                        data-filter="new"
+                        type="button"
+                    >
+                        Brand New
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PRODUCTS -->
+
+            <div
+                class="products-grid"
+                id="productsGrid"
+            ></div>
+
+
+            <!-- EMPTY STATE -->
+
+            <div
+                class="empty-products"
+                id="emptyProducts"
+                hidden
+            >
+
+                <h3>
+                    No products found
+                </h3>
+
+                <p>
+                    Try searching for another iPhone model.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             ABOUT
+        ================================================== -->
+
+        <section
+            class="about-section"
+            id="about"
+        >
+
+            <div class="about-image">
+
+                <img
+                    src="oraimages/description.jpg"
+                    alt="About ORACLE GADGET"
+                    loading="lazy"
+                >
+
+            </div>
+
+
+            <div class="about-content">
+
+                <p class="eyebrow">
+                    ABOUT ORACLE GADGET
+                </p>
+
+
+                <h2>
+
+                    Technology.
+                    <span>Simply better.</span>
+
+                </h2>
+
+
+                <p>
+
+                    ORACLE GADGET is an iPhone and gadget
+                    vendor based in Akure, Ondo State. We
+                    provide customers with different iPhone
+                    models and storage options.
+
+                </p>
+
+
+                <p>
+
+                    Browse our available devices, choose your
+                    preferred model and contact us directly
+                    through WhatsApp.
+
+                </p>
+
+
+                <a
+                    href="https://wa.me/2348129803111"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-black"
+                >
+                    Contact ORACLE GADGET
+                </a>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SOCIALS
+        ================================================== -->
+
+        <section class="social-section">
+
+            <p class="eyebrow">
+                FOLLOW ORACLE GADGET
+            </p>
+
+
+            <h2>
+                Stay connected.
+            </h2>
+
+
+            <div class="social-links">
+
+
+                <a
+                    href="https://www.instagram.com/ezeani71578"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+
+                    Instagram
+
+                    <span>
+                        @ezeani71578
+                    </span>
+
+                </a>
+
+
+
+                <a
+                    href="https://www.tiktok.com/@military_oracle"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+
+                    TikTok
+
+                    <span>
+                        @military_oracle
+                    </span>
+
+                </a>
+
+
+
+                <a
+                    href="#"
+                    id="snapchatLink"
+                >
+
+                    Snapchat
+
+                    <span>
+                        oracle_gadget
+                    </span>
+
+                </a>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CONTACT
+        ================================================== -->
+
+        <section
+            class="contact-section"
+            id="contact"
+        >
+
+            <div class="contact-heading">
+
+                <p class="eyebrow">
+                    CONTACT
+                </p>
+
+
+                <h2>
+
+                    Let's get you
+                    <span>connected.</span>
+
+                </h2>
+
+            </div>
+
+
+            <div class="contact-grid">
+
+
+                <a
+                    href="tel:+2348129803111"
+                    class="contact-card"
+                >
+
+                    <span class="contact-icon">
+                        ☎
+                    </span>
+
+
+                    <div>
+
+                        <strong>
+                            Phone
+                        </strong>
+
+                        <p>
+                            +234 812 980 3111
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+
+                <a
+                    href="mailto:ezeanifrancis15@gmail.com"
+                    class="contact-card"
+                >
+
+                    <span class="contact-icon">
+                        ✉
+                    </span>
+
+
+                    <div>
+
+                        <strong>
+                            Email
+                        </strong>
+
+                        <p>
+                            ezeanifrancis15@gmail.com
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+
+                <div class="contact-card">
+
+                    <span class="contact-icon">
+                        ⌖
+                    </span>
+
+
+                    <div>
+
+                        <strong>
+                            Location
+                        </strong>
+
+                        <p>
+                            Akure, Ondo State, Nigeria
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="footer">
+
+        <div class="footer-inner">
+
+
+            <div>
+
+                <h3>
+                    ORACLE GADGET
+                </h3>
+
+                <p>
+                    Premium iPhones and gadgets in Akure.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <a href="#home">
+                    Home
+                </a>
+
+                <a href="#shop">
+                    iPhones
+                </a>
+
+                <a href="#about">
+                    About
+                </a>
+
+                <a href="#contact">
+                    Contact
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <p>
+
+                ©
+                <span id="year"></span>
+                ORACLE GADGET.
+                All rights reserved.
+
+            </p>
+
+
+            <p>
+                Premium gadgets. Direct ordering.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         PRODUCT MODAL
+    ====================================================== -->
+
+    <div
+        class="modal"
+        id="productModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="modal-overlay"
+            id="modalOverlay"
+        ></div>
+
+
+        <div
+            class="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Product details"
+        >
+
+            <button
+                class="modal-close"
+                id="modalClose"
+                type="button"
+                aria-label="Close product"
+            >
+                ×
+            </button>
+
+
+            <div class="modal-product">
+
+
+                <div class="modal-image-wrapper">
+
+                    <img
+                        id="modalImage"
+                        src=""
+                        alt=""
+                    >
+
+                </div>
+
+
+
+                <div class="modal-info">
+
+                    <p
+                        class="eyebrow"
+                        id="modalCondition"
+                    >
+                        AVAILABLE
+                    </p>
+
+
+                    <h2 id="modalName">
+                        iPhone
+                    </h2>
+
+
+                    <p
+                        class="modal-description"
+                        id="modalDescription"
+                    ></p>
+
+
+                    <div
+                        class="modal-price"
+                        id="modalPrice"
+                    >
+                        ₦0
+                    </div>
+
+
+                    <div class="modal-details">
+
+                        <div>
+
+                            <span>
+                                Storage
+                            </span>
+
+                            <strong id="modalStorage">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Availability
+                            </span>
+
+                            <strong id="modalStatus">
+                                —
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-black modal-order"
+                        id="modalOrder"
+                    >
+                        Order on WhatsApp
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FLOATING WHATSAPP
+    ====================================================== -->
+
+    <a
+        href="https://wa.me/2348129803111"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="whatsapp-float"
+        aria-label="Chat with ORACLE GADGET on WhatsApp"
+    >
+        WhatsApp
+    </a>
+
+
+
+    <!-- =====================================================
+         SCRIPTS
+    ====================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
