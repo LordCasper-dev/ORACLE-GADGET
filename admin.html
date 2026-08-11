@@ -15,9 +15,7 @@
         content="noindex,nofollow"
     >
 
-    <title>
-        ORACLE GADGET — Admin
-    </title>
+    <title>ORACLE GADGET — Admin</title>
 
     <link
         rel="stylesheet"
@@ -30,801 +28,954 @@
 <body>
 
 
-    <!-- =====================================================
-         LOGIN SCREEN
-    ====================================================== -->
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 
-    <section
-        class="login-screen"
-        id="loginScreen"
-    >
+<section
+    class="login-screen"
+    id="loginScreen"
+>
 
-        <div class="login-box">
+    <div class="login-box">
 
-            <div class="login-logo">
+        <div class="login-logo">
 
-                <img
-                    src="oraimages/logo.jpg"
-                    alt="ORACLE GADGET"
-                >
-
-            </div>
-
-
-            <p class="admin-label">
-                ADMINISTRATION
-            </p>
-
-
-            <h1>
-                ORACLE GADGET
-            </h1>
-
-
-            <p class="login-subtitle">
-                Secure administrator access
-            </p>
-
-
-            <form id="loginForm">
-
-                <div class="form-group">
-
-                    <label for="loginEmail">
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="loginEmail"
-                        value="ezeanifrancis15@gmail.com"
-                        required
-                        autocomplete="email"
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="loginPassword">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="loginPassword"
-                        required
-                        autocomplete="current-password"
-                    >
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="primary-btn full-width"
-                    id="loginButton"
-                >
-                    Sign In
-                </button>
-
-
-                <p
-                    class="form-message"
-                    id="loginMessage"
-                ></p>
-
-            </form>
+            <img
+                src="oraimages/logo.jpg"
+                alt="ORACLE GADGET"
+            >
 
         </div>
 
-    </section>
+
+        <p class="admin-label">
+            ADMINISTRATION
+        </p>
+
+
+        <h1>
+            ORACLE GADGET
+        </h1>
+
+
+        <p class="login-subtitle">
+            Secure administrator access
+        </p>
+
+
+        <form id="loginForm">
+
+            <div class="form-group">
+
+                <label for="loginEmail">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    value="ezeanifrancis15@gmail.com"
+                    required
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="loginPassword">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    required
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-btn full-width"
+                id="loginButton"
+            >
+                Sign In
+            </button>
+
+
+            <p
+                class="form-message"
+                id="loginMessage"
+            ></p>
+
+        </form>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     ADMIN APP
+========================================================= -->
+
+<div
+    class="admin-app"
+    id="adminApp"
+    hidden
+>
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-brand">
+
+            <img
+                src="oraimages/logo.jpg"
+                alt="ORACLE GADGET"
+            >
+
+            <div>
+
+                <strong>
+                    ORACLE
+                </strong>
+
+                <span>
+                    ADMIN
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <button
+                class="nav-item active"
+                data-section="dashboardSection"
+                type="button"
+            >
+                Dashboard
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="productsSection"
+                type="button"
+            >
+                Products
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="ordersSection"
+                type="button"
+            >
+                Orders
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-section="customersSection"
+                type="button"
+            >
+                Customers
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="index.html"
+                target="_blank"
+                rel="noopener"
+            >
+                View Website
+            </a>
+
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="logout-button"
+            >
+                Sign Out
+            </button>
+
+        </div>
+
+    </aside>
 
 
 
     <!-- =====================================================
-         ADMIN APPLICATION
+         MAIN
     ====================================================== -->
 
-    <div
-        class="admin-app"
-        id="adminApp"
-        hidden
-    >
+    <main class="admin-main">
 
 
-        <!-- =================================================
-             SIDEBAR
-        ================================================== -->
+        <!-- TOP BAR -->
 
-        <aside class="sidebar">
+        <header class="admin-topbar">
 
-            <div class="sidebar-brand">
+            <div>
 
-                <img
-                    src="oraimages/logo.jpg"
-                    alt="ORACLE GADGET"
-                >
+                <p class="admin-label">
+                    ORACLE GADGET
+                </p>
 
-                <div>
-
-                    <strong>
-                        ORACLE
-                    </strong>
-
-                    <span>
-                        ADMIN
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <nav class="sidebar-nav">
-
-                <button
-                    class="nav-item active"
-                    data-section="dashboardSection"
-                    type="button"
-                >
+                <h2 id="pageTitle">
                     Dashboard
-                </button>
-
-
-                <button
-                    class="nav-item"
-                    data-section="productsSection"
-                    type="button"
-                >
-                    Products
-                </button>
-
-            </nav>
-
-
-            <div class="sidebar-bottom">
-
-                <a
-                    href="index.html"
-                    target="_blank"
-                >
-                    View Website
-                </a>
-
-
-                <button
-                    type="button"
-                    id="logoutButton"
-                    class="logout-button"
-                >
-                    Sign Out
-                </button>
+                </h2>
 
             </div>
 
-        </aside>
+
+            <div class="admin-user">
+
+                <span>
+                    Signed in as
+                </span>
+
+                <strong id="adminEmail">
+                    —
+                </strong>
+
+            </div>
+
+        </header>
 
 
 
         <!-- =================================================
-             MAIN CONTENT
+             DASHBOARD
         ================================================== -->
 
-        <main class="admin-main">
+        <section
+            class="admin-section active"
+            id="dashboardSection"
+        >
 
-
-            <!-- TOP BAR -->
-
-            <header class="admin-topbar">
+            <div class="section-header">
 
                 <div>
 
                     <p class="admin-label">
-                        ORACLE GADGET
+                        OVERVIEW
                     </p>
 
-                    <h2 id="pageTitle">
+                    <h1>
                         Dashboard
-                    </h2>
+                    </h1>
 
                 </div>
 
 
-                <div class="admin-user">
+                <button
+                    type="button"
+                    class="primary-btn"
+                    id="dashboardAddProduct"
+                >
+                    + Add Product
+                </button>
+
+            </div>
+
+
+            <div class="stats-grid">
+
+
+                <div class="stat-card">
 
                     <span>
-                        Signed in as
+                        Total Products
                     </span>
 
-                    <strong id="adminEmail">
-                        —
+                    <strong id="totalProducts">
+                        0
                     </strong>
 
                 </div>
 
-            </header>
+
+                <div class="stat-card">
+
+                    <span>
+                        Available Products
+                    </span>
+
+                    <strong id="availableProducts">
+                        0
+                    </strong>
+
+                </div>
 
 
+                <div class="stat-card">
 
-            <!-- =================================================
-                 DASHBOARD
-            ================================================== -->
+                    <span>
+                        Sold Out
+                    </span>
 
-            <section
-                class="admin-section active"
-                id="dashboardSection"
-            >
+                    <strong id="soldProducts">
+                        0
+                    </strong>
 
-                <div class="section-header">
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Product Value
+                    </span>
+
+                    <strong id="productValue">
+                        ₦0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Total Orders
+                    </span>
+
+                    <strong id="totalOrders">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Total Customers
+                    </span>
+
+                    <strong id="totalCustomers">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Pending Orders
+                    </span>
+
+                    <strong id="pendingOrders">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        Total Sales
+                    </span>
+
+                    <strong id="totalSales">
+                        ₦0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <div class="card-heading">
 
                     <div>
 
                         <p class="admin-label">
-                            OVERVIEW
+                            INVENTORY
                         </p>
 
-                        <h1>
-                            Dashboard
-                        </h1>
+                        <h2>
+                            Current Products
+                        </h2>
 
                     </div>
-
-
-                    <button
-                        type="button"
-                        class="primary-btn"
-                        id="dashboardAddProduct"
-                    >
-                        + Add Product
-                    </button>
-
-                </div>
-
-
-                <div class="stats-grid">
-
-                    <div class="stat-card">
-
-                        <span>
-                            Total Products
-                        </span>
-
-                        <strong id="totalProducts">
-                            0
-                        </strong>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <span>
-                            Available
-                        </span>
-
-                        <strong id="availableProducts">
-                            0
-                        </strong>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <span>
-                            Sold Out
-                        </span>
-
-                        <strong id="soldProducts">
-                            0
-                        </strong>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <span>
-                            Product Value
-                        </span>
-
-                        <strong id="productValue">
-                            ₦0
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="dashboard-card">
-
-                    <div class="card-heading">
-
-                        <div>
-
-                            <p class="admin-label">
-                                INVENTORY
-                            </p>
-
-                            <h2>
-                                Current Products
-                            </h2>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        class="mini-products"
-                        id="miniProducts"
-                    ></div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 PRODUCTS
-            ================================================== -->
-
-            <section
-                class="admin-section"
-                id="productsSection"
-            >
-
-                <div class="section-header">
-
-                    <div>
-
-                        <p class="admin-label">
-                            INVENTORY MANAGEMENT
-                        </p>
-
-                        <h1>
-                            Products
-                        </h1>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="primary-btn"
-                        id="addProductButton"
-                    >
-                        + Add Product
-                    </button>
-
-                </div>
-
-
-                <div class="products-toolbar">
-
-                    <input
-                        type="search"
-                        id="adminSearch"
-                        placeholder="Search products..."
-                    >
-
-
-                    <select id="adminStatusFilter">
-
-                        <option value="all">
-                            All Status
-                        </option>
-
-                        <option value="Available">
-                            Available
-                        </option>
-
-                        <option value="Sold Out">
-                            Sold Out
-                        </option>
-
-                    </select>
 
                 </div>
 
 
                 <div
-                    class="admin-products"
-                    id="adminProducts"
+                    class="mini-products"
+                    id="miniProducts"
                 ></div>
 
-            </section>
+            </div>
 
 
-        </main>
+            <div class="dashboard-card">
 
-    </div>
+                <div class="card-heading">
 
+                    <div>
 
+                        <p class="admin-label">
+                            RECENT ORDERS
+                        </p>
 
-    <!-- =====================================================
-         PRODUCT FORM MODAL
-    ====================================================== -->
+                        <h2>
+                            Latest Orders
+                        </h2>
 
-    <div
-        class="admin-modal"
-        id="productModal"
-        hidden
-    >
+                    </div>
 
-        <div
-            class="admin-modal-overlay"
-            id="productModalOverlay"
-        ></div>
+                </div>
 
 
-        <div class="admin-modal-box">
+                <div
+                    id="recentOrders"
+                ></div>
 
-            <div class="modal-header">
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             PRODUCTS
+        ================================================== -->
+
+        <section
+            class="admin-section"
+            id="productsSection"
+        >
+
+            <div class="section-header">
 
                 <div>
 
                     <p class="admin-label">
-                        PRODUCT MANAGEMENT
+                        INVENTORY MANAGEMENT
                     </p>
 
-                    <h2 id="productModalTitle">
-                        Add Product
-                    </h2>
+                    <h1>
+                        Products
+                    </h1>
 
                 </div>
 
 
                 <button
                     type="button"
-                    class="close-button"
-                    id="closeProductModal"
+                    class="primary-btn"
+                    id="addProductButton"
                 >
-                    ×
+                    + Add Product
                 </button>
 
             </div>
 
 
-            <form id="productForm">
-
-
-                <!-- Hidden ID -->
+            <div class="products-toolbar">
 
                 <input
-                    type="hidden"
-                    id="productId"
+                    type="search"
+                    id="adminSearch"
+                    placeholder="Search products..."
                 >
 
 
-                <!-- Image -->
+                <select id="adminStatusFilter">
 
-                <div class="image-upload-section">
+                    <option value="all">
+                        All Status
+                    </option>
 
-                    <div
-                        class="image-preview"
-                        id="imagePreview"
-                    >
+                    <option value="Available">
+                        Available
+                    </option>
 
-                        <span>
-                            No image selected
-                        </span>
+                    <option value="Sold Out">
+                        Sold Out
+                    </option>
 
-                    </div>
+                </select>
 
-
-                    <div class="image-upload-controls">
-
-                        <label
-                            for="productImage"
-                            class="upload-button"
-                        >
-                            Choose Image
-                        </label>
-
-                        <input
-                            type="file"
-                            id="productImage"
-                            accept="image/*"
-                            hidden
-                        >
+            </div>
 
 
-                        <small>
-                            JPG, PNG or WEBP
-                        </small>
+            <div
+                class="admin-products"
+                id="adminProducts"
+            ></div>
 
-                    </div>
-
-                </div>
+        </section>
 
 
 
-                <!-- Name -->
+        <!-- =================================================
+             ORDERS
+        ================================================== -->
 
-                <div class="form-group">
+        <section
+            class="admin-section"
+            id="ordersSection"
+        >
 
-                    <label for="productName">
-                        Product Name
-                    </label>
+            <div class="section-header">
 
-                    <input
-                        type="text"
-                        id="productName"
-                        placeholder="iPhone 13"
-                        required
-                    >
+                <div>
+
+                    <p class="admin-label">
+                        ORDER MANAGEMENT
+                    </p>
+
+                    <h1>
+                        Orders
+                    </h1>
 
                 </div>
 
+            </div>
 
 
-                <!-- Price -->
+            <div class="products-toolbar">
 
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label for="productPrice">
-                            Price (₦)
-                        </label>
-
-                        <input
-                            type="number"
-                            id="productPrice"
-                            min="0"
-                            step="1"
-                            required
-                        >
-
-                    </div>
+                <input
+                    type="search"
+                    id="orderSearch"
+                    placeholder="Search orders..."
+                >
 
 
-                    <div class="form-group">
+                <select id="orderStatusFilter">
 
-                        <label for="productStorage">
-                            Storage
-                        </label>
+                    <option value="all">
+                        All Status
+                    </option>
 
-                        <input
-                            type="text"
-                            id="productStorage"
-                            placeholder="128GB"
-                            required
-                        >
+                    <option value="pending">
+                        Pending
+                    </option>
 
-                    </div>
+                    <option value="processing">
+                        Processing
+                    </option>
 
-                </div>
+                    <option value="completed">
+                        Completed
+                    </option>
+
+                    <option value="cancelled">
+                        Cancelled
+                    </option>
+
+                </select>
+
+            </div>
 
 
+            <div
+                id="adminOrders"
+                class="admin-orders"
+            ></div>
 
-                <!-- Condition -->
-
-                <div class="form-group">
-
-                    <label for="productCondition">
-                        Condition
-                    </label>
-
-                    <input
-                        type="text"
-                        id="productCondition"
-                        placeholder="UK Standard"
-                        required
-                    >
-
-                </div>
+        </section>
 
 
 
-                <!-- Status -->
+        <!-- =================================================
+             CUSTOMERS
+        ================================================== -->
 
-                <div class="form-group">
+        <section
+            class="admin-section"
+            id="customersSection"
+        >
 
-                    <label for="productStatus">
-                        Status
-                    </label>
+            <div class="section-header">
 
-                    <select id="productStatus">
+                <div>
 
-                        <option value="Available">
-                            Available
-                        </option>
+                    <p class="admin-label">
+                        CUSTOMER MANAGEMENT
+                    </p>
 
-                        <option value="Sold Out">
-                            Sold Out
-                        </option>
-
-                    </select>
+                    <h1>
+                        Customers
+                    </h1>
 
                 </div>
 
+            </div>
 
 
-                <!-- Description -->
+            <div class="products-toolbar">
 
-                <div class="form-group">
+                <input
+                    type="search"
+                    id="customerSearch"
+                    placeholder="Search customers..."
+                >
 
-                    <label for="productDescription">
-                        Description
-                    </label>
-
-                    <textarea
-                        id="productDescription"
-                        rows="4"
-                        placeholder="Available UK Standard 128GB"
-                        required
-                    ></textarea>
-
-                </div>
+            </div>
 
 
+            <div
+                id="adminCustomers"
+                class="admin-customers"
+            ></div>
 
-                <!-- Colors -->
+        </section>
 
-                <div class="form-group">
+    </main>
 
-                    <label>
-                        Available Colors
-                    </label>
-
-
-                    <div
-                        class="color-grid"
-                        id="colorGrid"
-                    >
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Black"
-                            >
-                            Black
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="White"
-                            >
-                            White
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Yellow"
-                            >
-                            Yellow
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Blue"
-                            >
-                            Blue
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Red"
-                            >
-                            Red
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Purple"
-                            >
-                            Purple
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Green"
-                            >
-                            Green
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Silver"
-                            >
-                            Silver
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Space Grey"
-                            >
-                            Space Grey
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Gold"
-                            >
-                            Gold
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Magenta"
-                            >
-                            Magenta
-                        </label>
-
-                        <label>
-                            <input
-                                type="checkbox"
-                                value="Cyan"
-                            >
-                            Cyan
-                        </label>
-
-                    </div>
-
-                </div>
+</div>
 
 
 
-                <!-- Form buttons -->
+<!-- =========================================================
+     PRODUCT MODAL
+========================================================= -->
 
-                <div class="form-actions">
+<div
+    class="admin-modal"
+    id="productModal"
+    hidden
+>
 
-                    <button
-                        type="button"
-                        class="secondary-btn"
-                        id="cancelProduct"
-                    >
-                        Cancel
-                    </button>
-
-
-                    <button
-                        type="submit"
-                        class="primary-btn"
-                        id="saveProduct"
-                    >
-                        Save Product
-                    </button>
-
-                </div>
+    <div
+        class="admin-modal-overlay"
+        id="productModalOverlay"
+    ></div>
 
 
-                <p
-                    class="form-message"
-                    id="productMessage"
-                ></p>
+    <div class="admin-modal-box">
 
-            </form>
+        <div class="modal-header">
+
+            <div>
+
+                <p class="admin-label">
+                    PRODUCT MANAGEMENT
+                </p>
+
+                <h2 id="productModalTitle">
+                    Add Product
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="close-button"
+                id="closeProductModal"
+            >
+                ×
+            </button>
 
         </div>
 
+
+        <form id="productForm">
+
+
+            <input
+                type="hidden"
+                id="productId"
+            >
+
+
+            <div class="image-upload-section">
+
+                <div
+                    class="image-preview"
+                    id="imagePreview"
+                >
+
+                    <span>
+                        No image selected
+                    </span>
+
+                </div>
+
+
+                <div class="image-upload-controls">
+
+                    <label
+                        for="productImage"
+                        class="upload-button"
+                    >
+                        Choose Image
+                    </label>
+
+
+                    <input
+                        type="file"
+                        id="productImage"
+                        accept="image/*"
+                        hidden
+                    >
+
+
+                    <small>
+                        JPG, PNG or WEBP
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="productName">
+                    Product Name
+                </label>
+
+                <input
+                    type="text"
+                    id="productName"
+                    placeholder="iPhone 13"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="productPrice">
+                        Price (₦)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="productPrice"
+                        min="0"
+                        step="1"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="productStorage">
+                        Storage
+                    </label>
+
+                    <input
+                        type="text"
+                        id="productStorage"
+                        placeholder="128GB"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="productCondition">
+                    Condition
+                </label>
+
+                <input
+                    type="text"
+                    id="productCondition"
+                    placeholder="UK Standard"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="productStatus">
+                    Status
+                </label>
+
+                <select id="productStatus">
+
+                    <option value="Available">
+                        Available
+                    </option>
+
+                    <option value="Sold Out">
+                        Sold Out
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="productDescription">
+                    Description
+                </label>
+
+                <textarea
+                    id="productDescription"
+                    rows="4"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Available Colors
+                </label>
+
+
+                <div
+                    class="color-grid"
+                    id="colorGrid"
+                >
+
+                    <label>
+                        <input type="checkbox" value="Black">
+                        Black
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="White">
+                        White
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Yellow">
+                        Yellow
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Blue">
+                        Blue
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Red">
+                        Red
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Purple">
+                        Purple
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Green">
+                        Green
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Silver">
+                        Silver
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Space Grey">
+                        Space Grey
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Gold">
+                        Gold
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Magenta">
+                        Magenta
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="Cyan">
+                        Cyan
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    id="cancelProduct"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="primary-btn"
+                    id="saveProduct"
+                >
+                    Save Product
+                </button>
+
+            </div>
+
+
+            <p
+                class="form-message"
+                id="productMessage"
+            ></p>
+
+        </form>
+
     </div>
 
+</div>
 
 
-    <!-- =====================================================
-         SUPABASE
-    ====================================================== -->
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- =========================================================
+     SUPABASE
+========================================================= -->
 
-    <script src="admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="admin.js"></script>
 
 </body>
 
