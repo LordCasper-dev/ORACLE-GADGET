@@ -3,11 +3,13 @@
    PRODUCTS + ORDERS + CUSTOMERS
    SUPABASE VERSION
    COMPLETE ADMIN JAVASCRIPT
-   ========================================================= */
+   SECURITY-FIRST VERSION
+========================================================= */
+
 
 /* =========================================================
    SUPABASE
-   ========================================================= */
+========================================================= */
 
 const SUPABASE_URL =
     "https://hdconkdghgtysyzqvqko.supabase.co";
@@ -24,7 +26,7 @@ const supabaseClient =
 
 /* =========================================================
    ADMIN CONFIG
-   ========================================================= */
+========================================================= */
 
 const ADMIN_EMAIL =
     "ezeanifrancis15@gmail.com";
@@ -35,27 +37,13 @@ const STORAGE_BUCKET =
 const STORAGE_FOLDER =
     "oraimages";
 
-/*
-   Personal admin control.
-
-   If your HTML already contains elements for these controls,
-   the script will automatically connect to them.
-
-   Supported IDs:
-   adminStatusToggle
-   adminAccountStatus
-   activateAdmin
-   suspendAdmin
-   adminStatusMessage
-*/
-
 const PERSONAL_ADMIN_EMAIL =
     ADMIN_EMAIL;
 
 
 /* =========================================================
    DATABASE TABLES
-   ========================================================= */
+========================================================= */
 
 const CUSTOMER_TABLE =
     "customer";
@@ -71,8 +59,29 @@ const PRODUCTS_TABLE =
 
 
 /* =========================================================
-   STATE
-   ========================================================= */
+   SECURITY STATE
+========================================================= */
+
+/*
+   IMPORTANT SECURITY BEHAVIOR
+
+   Every time admin.html is opened:
+
+   1. Existing Supabase session is removed.
+   2. Login screen is displayed.
+   3. Admin dashboard remains hidden.
+   4. User must manually sign in again.
+   5. Only ADMIN_EMAIL is allowed.
+   6. Dashboard cannot be shown before successful login.
+*/
+
+let adminUnlocked = false;
+let initializingSecurity = true;
+
+
+/* =========================================================
+   APPLICATION STATE
+========================================================= */
 
 let products = [];
 let orders = [];
@@ -89,10 +98,8 @@ let deletingProduct = false;
 
 
 /* =========================================================
-   DOM
-   ========================================================= */
-
-/* Authentication */
+   DOM — AUTHENTICATION
+========================================================= */
 
 const loginScreen =
     document.getElementById("loginScreen");
@@ -127,7 +134,7 @@ const pageTitle =
 
 /* =========================================================
    DASHBOARD
-   ========================================================= */
+========================================================= */
 
 const totalProducts =
     document.getElementById("totalProducts");
@@ -162,7 +169,7 @@ const recentOrders =
 
 /* =========================================================
    PRODUCTS
-   ========================================================= */
+========================================================= */
 
 const adminProducts =
     document.getElementById("adminProducts");
@@ -176,7 +183,7 @@ const adminStatusFilter =
 
 /* =========================================================
    ORDERS
-   ========================================================= */
+========================================================= */
 
 const adminOrders =
     document.getElementById("adminOrders");
@@ -190,7 +197,7 @@ const orderStatusFilter =
 
 /* =========================================================
    CUSTOMERS
-   ========================================================= */
+========================================================= */
 
 const adminCustomers =
     document.getElementById("adminCustomers");
@@ -201,7 +208,7 @@ const customerSearch =
 
 /* =========================================================
    PRODUCT MODAL
-   ========================================================= */
+========================================================= */
 
 const productModal =
     document.getElementById("productModal");
@@ -260,7 +267,7 @@ const colorGrid =
 
 /* =========================================================
    PERSONAL ADMIN CONTROLS
-   ========================================================= */
+========================================================= */
 
 const adminStatusToggle =
     document.getElementById("adminStatusToggle");
@@ -280,7 +287,7 @@ const adminStatusMessage =
 
 /* =========================================================
    PRICE FORMAT
-   ========================================================= */
+========================================================= */
 
 function formatPrice(price) {
 
@@ -299,7 +306,7 @@ function formatPrice(price) {
 
 /* =========================================================
    DATE FORMAT
-   ========================================================= */
+========================================================= */
 
 function formatDate(value) {
 
@@ -330,7 +337,7 @@ function formatDate(value) {
 
 /* =========================================================
    HTML ESCAPING
-   ========================================================= */
+========================================================= */
 
 function escapeHTML(value) {
 
@@ -356,7 +363,7 @@ function escapeAttribute(value) {
 
 /* =========================================================
    SUPABASE ERROR
-   ========================================================= */
+========================================================= */
 
 function getSupabaseErrorMessage(error) {
 
@@ -375,7 +382,7 @@ function getSupabaseErrorMessage(error) {
 
 /* =========================================================
    IMAGE PATH CLEANING
-   ========================================================= */
+========================================================= */
 
 function cleanImagePath(imagePath) {
 
@@ -391,7 +398,7 @@ function cleanImagePath(imagePath) {
 
 /* =========================================================
    CREATE STORAGE URL
-   ========================================================= */
+========================================================= */
 
 function createStorageUrl(path) {
 
@@ -435,7 +442,7 @@ function createStorageUrl(path) {
 
 /* =========================================================
    IMAGE CANDIDATES
-   ========================================================= */
+========================================================= */
 
 function getImageCandidates(imagePath) {
 
@@ -489,7 +496,7 @@ function getImageCandidates(imagePath) {
 
 /* =========================================================
    IMAGE LOADER
-   ========================================================= */
+========================================================= */
 
 function setImageWithFallbacks(
     imageElement,
@@ -554,9 +561,11 @@ function setImageWithFallbacks(
 
 /* =========================================================
    LOGIN SCREEN
-   ========================================================= */
+========================================================= */
 
 function showLogin() {
+
+    adminUnlocked = false;
 
     if (loginScreen) {
         loginScreen.hidden = false;
@@ -564,6 +573,10 @@ function showLogin() {
 
     if (adminApp) {
         adminApp.hidden = true;
+    }
+
+    if (adminEmail) {
+        adminEmail.textContent = "—";
     }
 }
 
@@ -594,21 +607,111 @@ function setLoginLoading(loading) {
 
 
 /* =========================================================
+   SECURITY RESET
+========================================================= */
+
+/*
+   This is the major fix.
+
+   Supabase normally remembers the previous login.
+
+   We deliberately remove that session whenever
+   admin.html is opened.
+
+   Therefore:
+
+   Open /myadmin
+       ↓
+   Existing session removed
+       ↓
+   Login screen
+       ↓
+   User manually signs in
+       ↓
+   Admin dashboard
+*/
+
+async function forceFreshAdminLogin() {
+
+    showLogin();
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.auth.getSession();
+
+        if (error) {
+            console.warn(
+                "Could not inspect existing session:",
+                error
+            );
+        }
+
+        if (data?.session) {
+
+            await supabaseClient.auth.signOut();
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Security reset error:",
+            error
+        );
+
+    } finally {
+
+        showLogin();
+
+        initializingSecurity = false;
+    }
+}
+
+
+/* =========================================================
    SHOW ADMIN
-   ========================================================= */
+========================================================= */
 
 async function showAdminApp(user) {
 
-    if (
-        !user ||
-        user.email?.toLowerCase() !==
-            ADMIN_EMAIL.toLowerCase()
-    ) {
+    if (initializingSecurity) {
+        return;
+    }
+
+    if (!user) {
 
         showLogin();
 
         return;
     }
+
+    const userEmail =
+        String(
+            user.email || ""
+        )
+            .trim()
+            .toLowerCase();
+
+    if (
+        userEmail !==
+        ADMIN_EMAIL.toLowerCase()
+    ) {
+
+        await supabaseClient.auth.signOut();
+
+        showLoginError(
+            "This account is not authorized."
+        );
+
+        showLogin();
+
+        return;
+    }
+
+    adminUnlocked = true;
 
     if (loginScreen) {
         loginScreen.hidden = true;
@@ -623,76 +726,15 @@ async function showAdminApp(user) {
             user.email;
     }
 
-    await loadAllAdminData();
-
     setupPersonalAdminControls();
-}
 
-
-/* =========================================================
-   SESSION CHECK
-   ========================================================= */
-
-async function checkAdminSession() {
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient.auth.getSession();
-
-        if (error) {
-            throw error;
-        }
-
-        const session =
-            data.session;
-
-        if (!session) {
-
-            showLogin();
-
-            return;
-        }
-
-        const user =
-            session.user;
-
-        if (
-            user.email?.toLowerCase() !==
-            ADMIN_EMAIL.toLowerCase()
-        ) {
-
-            await supabaseClient.auth.signOut();
-
-            showLoginError(
-                "This account is not authorized."
-            );
-
-            showLogin();
-
-            return;
-        }
-
-        await showAdminApp(user);
-
-    } catch (error) {
-
-        console.error(
-            "Session error:",
-            error
-        );
-
-        showLogin();
-    }
+    await loadAllAdminData();
 }
 
 
 /* =========================================================
    LOGIN
-   ========================================================= */
+========================================================= */
 
 if (loginForm) {
 
@@ -750,8 +792,18 @@ if (loginForm) {
                     throw error;
                 }
 
+                const user =
+                    data?.user;
+
+                if (!user) {
+
+                    throw new Error(
+                        "Login succeeded but no user account was returned."
+                    );
+                }
+
                 if (
-                    data.user?.email?.toLowerCase() !==
+                    user.email?.toLowerCase() !==
                     ADMIN_EMAIL.toLowerCase()
                 ) {
 
@@ -763,7 +815,7 @@ if (loginForm) {
                 }
 
                 await showAdminApp(
-                    data.user
+                    user
                 );
 
             } catch (error) {
@@ -790,7 +842,7 @@ if (loginForm) {
 
 /* =========================================================
    LOGOUT
-   ========================================================= */
+========================================================= */
 
 if (logoutButton) {
 
@@ -810,6 +862,8 @@ if (logoutButton) {
                 );
             }
 
+            adminUnlocked = false;
+
             products = [];
             orders = [];
             customers = [];
@@ -820,14 +874,26 @@ if (logoutButton) {
             if (loginPassword) {
                 loginPassword.value = "";
             }
+
+            showLoginError("");
         }
     );
 }
 
 
 /* =========================================================
-   AUTH STATE
-   ========================================================= */
+   AUTH STATE CHANGE
+========================================================= */
+
+/*
+   IMPORTANT:
+
+   We do NOT automatically open the dashboard from
+   INITIAL_SESSION.
+
+   This prevents Supabase's remembered session from
+   bypassing the login screen.
+*/
 
 supabaseClient.auth.onAuthStateChange(
     async (
@@ -835,13 +901,23 @@ supabaseClient.auth.onAuthStateChange(
         session
     ) => {
 
+        if (event === "INITIAL_SESSION") {
+            return;
+        }
+
         if (
             event === "SIGNED_OUT" ||
             !session
         ) {
 
+            adminUnlocked = false;
+
             showLogin();
 
+            return;
+        }
+
+        if (initializingSecurity) {
             return;
         }
 
@@ -855,12 +931,25 @@ supabaseClient.auth.onAuthStateChange(
 
             await supabaseClient.auth.signOut();
 
+            showLoginError(
+                "This account is not authorized."
+            );
+
             showLogin();
 
             return;
         }
 
-        if (!loadingAdmin) {
+        /*
+           Only allow automatic response to a
+           SIGNED_IN event if the login process has
+           already passed through the security screen.
+        */
+
+        if (
+            event === "SIGNED_IN" &&
+            !adminUnlocked
+        ) {
 
             await showAdminApp(
                 user
@@ -872,9 +961,13 @@ supabaseClient.auth.onAuthStateChange(
 
 /* =========================================================
    LOAD ALL DATA
-   ========================================================= */
+========================================================= */
 
 async function loadAllAdminData() {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     if (loadingAdmin) {
         return;
@@ -916,7 +1009,7 @@ async function loadAllAdminData() {
 
 /* =========================================================
    LOAD PRODUCTS
-   ========================================================= */
+========================================================= */
 
 async function loadProducts() {
 
@@ -959,7 +1052,7 @@ async function loadProducts() {
 
 /* =========================================================
    LOAD CUSTOMERS
-   ========================================================= */
+========================================================= */
 
 async function loadCustomers() {
 
@@ -1004,7 +1097,7 @@ async function loadCustomers() {
 
 /* =========================================================
    LOAD ORDERS
-   ========================================================= */
+========================================================= */
 
 async function loadOrders() {
 
@@ -1049,7 +1142,7 @@ async function loadOrders() {
 
 /* =========================================================
    LOAD ORDER ITEMS
-   ========================================================= */
+========================================================= */
 
 async function loadOrderItems() {
 
@@ -1110,7 +1203,7 @@ async function loadOrderItems() {
 
 /* =========================================================
    DASHBOARD
-   ========================================================= */
+========================================================= */
 
 function updateDashboard() {
 
@@ -1226,7 +1319,7 @@ function updateDashboard() {
 
 /* =========================================================
    MINI PRODUCTS
-   ========================================================= */
+========================================================= */
 
 function renderMiniProducts() {
 
@@ -1293,7 +1386,7 @@ function renderMiniProducts() {
 
 /* =========================================================
    RENDER PRODUCTS
-   ========================================================= */
+========================================================= */
 
 function renderAdminProducts() {
 
@@ -1461,7 +1554,7 @@ function renderAdminProducts() {
 
 /* =========================================================
    PRODUCT ACTIONS
-   ========================================================= */
+========================================================= */
 
 function attachProductActions() {
 
@@ -1499,7 +1592,7 @@ function attachProductActions() {
 
 /* =========================================================
    ADD PRODUCT
-   ========================================================= */
+========================================================= */
 
 function openAddProduct() {
 
@@ -1545,7 +1638,7 @@ function openAddProduct() {
 
 /* =========================================================
    EDIT PRODUCT
-   ========================================================= */
+========================================================= */
 
 function openEditProduct(id) {
 
@@ -1660,7 +1753,7 @@ function openEditProduct(id) {
 
 /* =========================================================
    OPEN PRODUCT MODAL
-   ========================================================= */
+========================================================= */
 
 function openProductModal() {
 
@@ -1677,7 +1770,7 @@ function openProductModal() {
 
 /* =========================================================
    CLOSE PRODUCT MODAL
-   ========================================================= */
+========================================================= */
 
 function closeModal() {
 
@@ -1694,7 +1787,7 @@ function closeModal() {
 
 /* =========================================================
    MODAL EVENTS
-   ========================================================= */
+========================================================= */
 
 if (closeProductModal) {
 
@@ -1717,7 +1810,7 @@ if (productModalOverlay) {
 
 /* =========================================================
    IMAGE SELECTION
-   ========================================================= */
+========================================================= */
 
 if (productImage) {
 
@@ -1775,7 +1868,7 @@ if (productImage) {
 
 /* =========================================================
    SAVE PRODUCT FORM
-   ========================================================= */
+========================================================= */
 
 if (productForm) {
 
@@ -1793,9 +1886,13 @@ if (productForm) {
 
 /* =========================================================
    SAVE PRODUCT
-   ========================================================= */
+========================================================= */
 
 async function saveProductToDatabase() {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     if (!saveProduct) {
         return;
@@ -2014,7 +2111,7 @@ async function saveProductToDatabase() {
 
 /* =========================================================
    UPLOAD PRODUCT IMAGE
-   ========================================================= */
+========================================================= */
 
 async function uploadProductImage(file) {
 
@@ -2070,7 +2167,7 @@ async function uploadProductImage(file) {
 
 /* =========================================================
    DELETE STORAGE IMAGE
-   ========================================================= */
+========================================================= */
 
 async function deleteStorageImage(imagePath) {
 
@@ -2109,6 +2206,7 @@ async function deleteStorageImage(imagePath) {
                 .replace(/^\/+/, "");
 
     } catch {
+
         path =
             path.replace(/^\/+/, "");
     }
@@ -2137,9 +2235,13 @@ async function deleteStorageImage(imagePath) {
 
 /* =========================================================
    DELETE PRODUCT
-   ========================================================= */
+========================================================= */
 
 async function deleteProduct(id) {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     if (deletingProduct) {
         return;
@@ -2227,7 +2329,7 @@ async function deleteProduct(id) {
 
 /* =========================================================
    COLORS
-   ========================================================= */
+========================================================= */
 
 function getSelectedColors() {
 
@@ -2268,7 +2370,7 @@ function clearColorSelections() {
 
 /* =========================================================
    GET CUSTOMER
-   ========================================================= */
+========================================================= */
 
 function getCustomerById(id) {
 
@@ -2282,7 +2384,7 @@ function getCustomerById(id) {
 
 /* =========================================================
    GET ORDER ITEMS
-   ========================================================= */
+========================================================= */
 
 function getItemsForOrder(orderId) {
 
@@ -2296,7 +2398,7 @@ function getItemsForOrder(orderId) {
 
 /* =========================================================
    RENDER ORDERS
-   ========================================================= */
+========================================================= */
 
 function renderAdminOrders() {
 
@@ -2604,7 +2706,7 @@ function renderAdminOrders() {
 
 /* =========================================================
    ORDER ACTIONS
-   ========================================================= */
+========================================================= */
 
 function attachOrderActions() {
 
@@ -2647,12 +2749,16 @@ function attachOrderActions() {
 
 /* =========================================================
    UPDATE ORDER STATUS
-   ========================================================= */
+========================================================= */
 
 async function updateOrderStatus(
     orderId,
     status
 ) {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     try {
 
@@ -2711,9 +2817,13 @@ async function updateOrderStatus(
 
 /* =========================================================
    DELETE ORDER
-   ========================================================= */
+========================================================= */
 
 async function deleteOrder(orderId) {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     if (deletingOrder) {
         return;
@@ -2748,10 +2858,6 @@ async function deleteOrder(orderId) {
 
     try {
 
-        /*
-           Delete child order items first.
-        */
-
         const {
             error:
                 itemDeleteError
@@ -2767,10 +2873,6 @@ async function deleteOrder(orderId) {
         if (itemDeleteError) {
             throw itemDeleteError;
         }
-
-        /*
-           Then delete the order.
-        */
 
         const {
             error
@@ -2824,7 +2926,7 @@ async function deleteOrder(orderId) {
 
 /* =========================================================
    RECENT ORDERS
-   ========================================================= */
+========================================================= */
 
 function renderRecentOrders() {
 
@@ -2899,7 +3001,7 @@ function renderRecentOrders() {
 
 /* =========================================================
    RENDER CUSTOMERS
-   ========================================================= */
+========================================================= */
 
 function renderAdminCustomers() {
 
@@ -3076,7 +3178,7 @@ function renderAdminCustomers() {
 
 /* =========================================================
    CUSTOMER ACTIONS
-   ========================================================= */
+========================================================= */
 
 function attachCustomerActions() {
 
@@ -3101,9 +3203,13 @@ function attachCustomerActions() {
 
 /* =========================================================
    DELETE CUSTOMER
-   ========================================================= */
+========================================================= */
 
 async function deleteCustomer(customerId) {
+
+    if (!adminUnlocked) {
+        return;
+    }
 
     if (deletingCustomer) {
         return;
@@ -3142,11 +3248,6 @@ async function deleteCustomer(customerId) {
 
     try {
 
-        /*
-           Step 1:
-           Delete order items for every order.
-        */
-
         for (
             const order of customerOrders
         ) {
@@ -3167,11 +3268,6 @@ async function deleteCustomer(customerId) {
                 throw itemError;
             }
         }
-
-        /*
-           Step 2:
-           Delete the customer's orders.
-        */
 
         if (customerOrders.length) {
 
@@ -3197,11 +3293,6 @@ async function deleteCustomer(customerId) {
             }
         }
 
-        /*
-           Step 3:
-           Delete customer.
-        */
-
         const {
             error
         } =
@@ -3216,11 +3307,6 @@ async function deleteCustomer(customerId) {
         if (error) {
             throw error;
         }
-
-        /*
-           Step 4:
-           Refresh everything.
-        */
 
         await loadCustomers();
 
@@ -3263,7 +3349,7 @@ async function deleteCustomer(customerId) {
 
 /* =========================================================
    NAVIGATION
-   ========================================================= */
+========================================================= */
 
 document
     .querySelectorAll(".nav-item")
@@ -3273,6 +3359,10 @@ document
             button.addEventListener(
                 "click",
                 () => {
+
+                    if (!adminUnlocked) {
+                        return;
+                    }
 
                     const sectionId =
                         button.dataset.section;
@@ -3355,7 +3445,7 @@ document
 
 /* =========================================================
    ADD PRODUCT BUTTON
-   ========================================================= */
+========================================================= */
 
 const addProductButton =
     document.getElementById(
@@ -3371,7 +3461,7 @@ if (addProductButton) {
 
 /* =========================================================
    DASHBOARD ADD PRODUCT
-   ========================================================= */
+========================================================= */
 
 const dashboardAddProduct =
     document.getElementById(
@@ -3399,7 +3489,7 @@ if (dashboardAddProduct) {
 
 /* =========================================================
    SEARCH
-   ========================================================= */
+========================================================= */
 
 if (adminSearch) {
 
@@ -3409,7 +3499,6 @@ if (adminSearch) {
     );
 }
 
-
 if (adminStatusFilter) {
 
     adminStatusFilter.addEventListener(
@@ -3417,7 +3506,6 @@ if (adminStatusFilter) {
         renderAdminProducts
     );
 }
-
 
 if (orderSearch) {
 
@@ -3427,7 +3515,6 @@ if (orderSearch) {
     );
 }
 
-
 if (orderStatusFilter) {
 
     orderStatusFilter.addEventListener(
@@ -3435,7 +3522,6 @@ if (orderStatusFilter) {
         renderAdminOrders
     );
 }
-
 
 if (customerSearch) {
 
@@ -3448,7 +3534,7 @@ if (customerSearch) {
 
 /* =========================================================
    ESCAPE KEY
-   ========================================================= */
+========================================================= */
 
 document.addEventListener(
     "keydown",
@@ -3468,33 +3554,7 @@ document.addEventListener(
 
 /* =========================================================
    PERSONAL ADMIN STATUS
-   ========================================================= */
-
-/*
-   IMPORTANT:
-
-   The frontend cannot securely decide whether an account
-   is active or suspended.
-
-   This section is designed to work with an optional
-   admin_settings table.
-
-   Expected table:
-
-   admin_settings
-
-   columns:
-   id
-   admin_email
-   status
-   updated_at
-
-   status should be:
-   "active"
-   or
-   "suspended"
-*/
-
+========================================================= */
 
 async function loadPersonalAdminStatus() {
 
@@ -3536,11 +3596,6 @@ async function loadPersonalAdminStatus() {
             "Admin status could not be loaded:",
             error
         );
-
-        /*
-           We do not block the admin panel if this
-           optional control has not yet been created.
-        */
     }
 }
 
@@ -3769,7 +3824,18 @@ function setupPersonalAdminControls() {
 
 
 /* =========================================================
-   INITIALIZE
-   ========================================================= */
+   INITIALIZE SECURITY
+========================================================= */
 
-checkAdminSession();
+/*
+   DO NOT call checkAdminSession() anymore.
+
+   The old function automatically restored the
+   Supabase session and caused the security screen
+   to be bypassed.
+
+   We now deliberately start every admin visit
+   from the login screen.
+*/
+
+forceFreshAdminLogin();
