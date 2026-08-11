@@ -1,7 +1,7 @@
 /* =========================================================
    ORACLE GADGET ADMIN SYSTEM
-   PRODUCTS + IMAGE MANAGEMENT
-   FIXED SUPABASE IMAGE SYSTEM
+   PRODUCTS + ORDERS + CUSTOMERS
+   SUPABASE VERSION
 ========================================================= */
 
 
@@ -23,7 +23,7 @@ const supabaseClient =
 
 
 /* =========================================================
-   ADMIN
+   ADMIN CONFIG
 ========================================================= */
 
 const ADMIN_EMAIL =
@@ -37,14 +37,39 @@ const STORAGE_FOLDER =
 
 
 /* =========================================================
+   DATABASE TABLES
+========================================================= */
+
+const CUSTOMER_TABLE =
+    "customer";
+
+const ORDERS_TABLE =
+    "orders";
+
+const ORDER_ITEMS_TABLE =
+    "order_items";
+
+const PRODUCTS_TABLE =
+    "products";
+
+
+/* =========================================================
    STATE
 ========================================================= */
 
 let products = [];
 
+let orders = [];
+
+let customers = [];
+
+let orderItems = [];
+
 let editingProduct = null;
 
 let selectedImageFile = null;
+
+let loadingAdmin = false;
 
 
 /* =========================================================
@@ -101,6 +126,9 @@ const pageTitle =
         "pageTitle"
     );
 
+
+/* Dashboard */
+
 const totalProducts =
     document.getElementById(
         "totalProducts"
@@ -121,10 +149,38 @@ const productValue =
         "productValue"
     );
 
+const totalOrders =
+    document.getElementById(
+        "totalOrders"
+    );
+
+const totalCustomers =
+    document.getElementById(
+        "totalCustomers"
+    );
+
+const pendingOrders =
+    document.getElementById(
+        "pendingOrders"
+    );
+
+const totalSales =
+    document.getElementById(
+        "totalSales"
+    );
+
 const miniProducts =
     document.getElementById(
         "miniProducts"
     );
+
+const recentOrders =
+    document.getElementById(
+        "recentOrders"
+    );
+
+
+/* Products */
 
 const adminProducts =
     document.getElementById(
@@ -140,6 +196,40 @@ const adminStatusFilter =
     document.getElementById(
         "adminStatusFilter"
     );
+
+
+/* Orders */
+
+const adminOrders =
+    document.getElementById(
+        "adminOrders"
+    );
+
+const orderSearch =
+    document.getElementById(
+        "orderSearch"
+    );
+
+const orderStatusFilter =
+    document.getElementById(
+        "orderStatusFilter"
+    );
+
+
+/* Customers */
+
+const adminCustomers =
+    document.getElementById(
+        "adminCustomers"
+    );
+
+const customerSearch =
+    document.getElementById(
+        "customerSearch"
+    );
+
+
+/* Product modal */
 
 const productModal =
     document.getElementById(
@@ -233,7 +323,7 @@ const colorGrid =
 
 
 /* =========================================================
-   FORMAT PRICE
+   PRICE FORMAT
 ========================================================= */
 
 function formatPrice(price) {
@@ -248,41 +338,114 @@ function formatPrice(price) {
     ).format(
         Number(price) || 0
     );
-
 }
 
 
 /* =========================================================
-   CLEAN IMAGE PATH
+   DATE FORMAT
 ========================================================= */
 
-function cleanImagePath(imagePath) {
+function formatDate(value) {
+
+    if (!value) {
+        return "—";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "—";
+    }
+
+    return date.toLocaleString(
+        "en-NG",
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    );
+}
+
+
+/* =========================================================
+   HTML ESCAPING
+========================================================= */
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        String(
+            value ?? ""
+        );
+
+    return div.innerHTML;
+}
+
+
+function escapeAttribute(value) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        );
+}
+
+
+/* =========================================================
+   IMAGE PATH
+========================================================= */
+
+function cleanImagePath(
+    imagePath
+) {
 
     if (!imagePath) {
         return "";
     }
 
-    let path =
-        String(
-            imagePath
-        ).trim();
-
-    path =
-        path.replace(
+    return String(
+        imagePath
+    )
+        .trim()
+        .replace(
             /^\/+/,
             ""
         );
-
-    return path;
-
 }
 
 
 /* =========================================================
-   CREATE STORAGE URL
+   STORAGE URL
 ========================================================= */
 
-function createStorageUrl(path) {
+function createStorageUrl(
+    path
+) {
 
     if (!path) {
         return "";
@@ -323,17 +486,17 @@ function createStorageUrl(path) {
             .join("/");
 
     return (
-        `${SUPABASE_URL}` +
-        `/storage/v1/object/public/` +
-        `${STORAGE_BUCKET}/` +
-        `${encodedPath}`
+        SUPABASE_URL +
+        "/storage/v1/object/public/" +
+        STORAGE_BUCKET +
+        "/" +
+        encodedPath
     );
-
 }
 
 
 /* =========================================================
-   GET IMAGE CANDIDATES
+   IMAGE CANDIDATES
 ========================================================= */
 
 function getImageCandidates(
@@ -353,12 +516,6 @@ function getImageCandidates(
         return [];
     }
 
-
-    /*
-       If database already contains
-       a complete URL, use it directly.
-    */
-
     if (
         original.startsWith(
             "http://"
@@ -374,21 +531,7 @@ function getImageCandidates(
 
     }
 
-
     const candidates = [];
-
-
-    /*
-       Remove "oraimages/" from a copy.
-
-       Example:
-
-       oraimages/iphone xr.jpg
-
-       becomes:
-
-       iphone xr.jpg
-    */
 
     const withoutFolder =
         original.replace(
@@ -396,47 +539,11 @@ function getImageCandidates(
             ""
         );
 
-
-    /*
-       =====================================================
-       CANDIDATE 1
-       EXACT DATABASE PATH
-       =====================================================
-
-       If database contains:
-
-       iphone xr.jpg
-
-       this produces:
-
-       product-images/iphone xr.jpg
-
-       If database contains:
-
-       oraimages/iphone xr.jpg
-
-       this produces:
-
-       product-images/oraimages/iphone xr.jpg
-    */
-
     candidates.push(
         createStorageUrl(
             original
         )
     );
-
-
-    /*
-       =====================================================
-       CANDIDATE 2
-       ROOT OF BUCKET
-       =====================================================
-
-       This is important for your current image:
-
-       product-images/iphone xr.jpg
-    */
 
     if (
         withoutFolder !==
@@ -451,30 +558,6 @@ function getImageCandidates(
 
     }
 
-
-    /*
-       If the database contains a filename
-       without the folder, make sure the
-       root location is explicitly included.
-    */
-
-    if (
-        !original
-            .toLowerCase()
-            .startsWith(
-                "oraimages/"
-            )
-    ) {
-
-        candidates.push(
-            createStorageUrl(
-                original
-            )
-        );
-
-    }
-
-
     return [
         ...new Set(
             candidates.filter(
@@ -482,33 +565,11 @@ function getImageCandidates(
             )
         )
     ];
-
 }
 
 
 /* =========================================================
-   GET PRIMARY IMAGE URL
-========================================================= */
-
-function getImageUrl(
-    imagePath
-) {
-
-    const candidates =
-        getImageCandidates(
-            imagePath
-        );
-
-    return (
-        candidates[0] ||
-        ""
-    );
-
-}
-
-
-/* =========================================================
-   SET IMAGE WITH FALLBACKS
+   IMAGE LOADER
 ========================================================= */
 
 function setImageWithFallbacks(
@@ -521,95 +582,48 @@ function setImageWithFallbacks(
         return;
     }
 
-
     const candidates =
         getImageCandidates(
             imagePath
         );
 
-
     imageElement.alt =
         altText;
-
 
     imageElement.onerror =
         null;
 
-
-    /*
-       No image path.
-    */
-
-    if (
-        candidates.length ===
-        0
-    ) {
+    if (!candidates.length) {
 
         imageElement.removeAttribute(
             "src"
-        );
-
-        imageElement.classList.add(
-            "image-unavailable"
         );
 
         return;
 
     }
 
-
-    let currentIndex = 0;
-
-
-    imageElement.classList.remove(
-        "image-unavailable"
-    );
-
-
-    /*
-       Load first candidate.
-    */
+    let index = 0;
 
     imageElement.src =
-        candidates[
-            currentIndex
-        ];
-
-
-    /*
-       If it fails, try the next
-       possible location.
-    */
+        candidates[index];
 
     imageElement.onerror =
         function () {
 
-            currentIndex++;
-
+            index++;
 
             if (
-                currentIndex <
+                index <
                 candidates.length
             ) {
 
                 imageElement.src =
-                    candidates[
-                        currentIndex
-                    ];
+                    candidates[index];
 
                 return;
 
             }
-
-
-            /*
-               All real image paths failed.
-
-               Do not silently replace the
-               image with the Oracle logo.
-
-               Leave the image empty instead.
-            */
 
             imageElement.onerror =
                 null;
@@ -618,24 +632,123 @@ function setImageWithFallbacks(
                 "src"
             );
 
-            imageElement.classList.add(
-                "image-unavailable"
-            );
-
-
-            console.error(
-                "ORACLE GADGET: Image failed:",
-                imagePath,
-                candidates
-            );
-
         };
-
 }
 
 
 /* =========================================================
-   CHECK ADMIN SESSION
+   ERROR MESSAGE
+========================================================= */
+
+function getSupabaseErrorMessage(
+    error
+) {
+
+    if (!error) {
+        return "Unknown Supabase error.";
+    }
+
+    return (
+        error.message ||
+        error.details ||
+        error.hint ||
+        JSON.stringify(
+            error
+        )
+    );
+}
+
+
+/* =========================================================
+   LOGIN SCREEN
+========================================================= */
+
+function showLogin() {
+
+    if (loginScreen) {
+        loginScreen.hidden =
+            false;
+    }
+
+    if (adminApp) {
+        adminApp.hidden =
+            true;
+    }
+}
+
+
+function showLoginError(
+    message
+) {
+
+    if (loginMessage) {
+
+        loginMessage.textContent =
+            message;
+
+    }
+}
+
+
+function setLoginLoading(
+    loading
+) {
+
+    if (!loginButton) {
+        return;
+    }
+
+    loginButton.disabled =
+        loading;
+
+    loginButton.textContent =
+        loading
+            ? "Signing In..."
+            : "Sign In";
+}
+
+
+/* =========================================================
+   SHOW ADMIN
+========================================================= */
+
+async function showAdminApp(
+    user
+) {
+
+    if (
+        !user ||
+        user.email?.toLowerCase() !==
+            ADMIN_EMAIL.toLowerCase()
+    ) {
+
+        showLogin();
+
+        return;
+
+    }
+
+    if (loginScreen) {
+        loginScreen.hidden =
+            true;
+    }
+
+    if (adminApp) {
+        adminApp.hidden =
+            false;
+    }
+
+    if (adminEmail) {
+        adminEmail.textContent =
+            user.email;
+    }
+
+    await loadAllAdminData();
+}
+
+
+/* =========================================================
+   CHECK SESSION
 ========================================================= */
 
 async function checkAdminSession() {
@@ -650,15 +763,12 @@ async function checkAdminSession() {
                 .auth
                 .getSession();
 
-
         if (error) {
             throw error;
         }
 
-
         const session =
             data.session;
-
 
         if (!session) {
 
@@ -668,40 +778,31 @@ async function checkAdminSession() {
 
         }
 
-
         const user =
             session.user;
 
-
         if (
-            user.email
-                ?.toLowerCase() !==
-            ADMIN_EMAIL
-                .toLowerCase()
+            user.email?.toLowerCase() !==
+            ADMIN_EMAIL.toLowerCase()
         ) {
 
             await supabaseClient
                 .auth
                 .signOut();
 
-
-            showLogin();
-
-
             showLoginError(
                 "This account is not authorized."
             );
 
+            showLogin();
 
             return;
 
         }
 
-
         await showAdminApp(
             user
         );
-
 
     } catch (error) {
 
@@ -713,68 +814,6 @@ async function checkAdminSession() {
         showLogin();
 
     }
-
-}
-
-
-/* =========================================================
-   SHOW LOGIN
-========================================================= */
-
-function showLogin() {
-
-    if (loginScreen) {
-
-        loginScreen.hidden =
-            false;
-
-    }
-
-
-    if (adminApp) {
-
-        adminApp.hidden =
-            true;
-
-    }
-
-}
-
-
-/* =========================================================
-   SHOW ADMIN
-========================================================= */
-
-async function showAdminApp(
-    user
-) {
-
-    if (loginScreen) {
-
-        loginScreen.hidden =
-            true;
-
-    }
-
-
-    if (adminApp) {
-
-        adminApp.hidden =
-            false;
-
-    }
-
-
-    if (adminEmail) {
-
-        adminEmail.textContent =
-            user.email;
-
-    }
-
-
-    await loadProducts();
-
 }
 
 
@@ -790,21 +829,17 @@ if (loginForm) {
 
             event.preventDefault();
 
-
             const email =
                 loginEmail.value
                     .trim()
                     .toLowerCase();
 
-
             const password =
                 loginPassword.value;
 
-
             if (
                 email !==
-                ADMIN_EMAIL
-                    .toLowerCase()
+                ADMIN_EMAIL.toLowerCase()
             ) {
 
                 showLoginError(
@@ -815,11 +850,13 @@ if (loginForm) {
 
             }
 
-
             setLoginLoading(
                 true
             );
 
+            showLoginError(
+                ""
+            );
 
             try {
 
@@ -834,23 +871,18 @@ if (loginForm) {
                             password
                         });
 
-
                 if (error) {
                     throw error;
                 }
 
-
                 if (
-                    data.user?.email
-                        ?.toLowerCase() !==
-                    ADMIN_EMAIL
-                        .toLowerCase()
+                    data.user?.email?.toLowerCase() !==
+                    ADMIN_EMAIL.toLowerCase()
                 ) {
 
                     await supabaseClient
                         .auth
                         .signOut();
-
 
                     throw new Error(
                         "This account is not authorized."
@@ -858,15 +890,9 @@ if (loginForm) {
 
                 }
 
-
-                loginMessage.textContent =
-                    "";
-
-
                 await showAdminApp(
                     data.user
                 );
-
 
             } catch (error) {
 
@@ -875,12 +901,11 @@ if (loginForm) {
                     error
                 );
 
-
                 showLoginError(
-                    error.message ||
-                    "Unable to sign in."
+                    getSupabaseErrorMessage(
+                        error
+                    )
                 );
-
 
             } finally {
 
@@ -897,45 +922,6 @@ if (loginForm) {
 
 
 /* =========================================================
-   LOGIN HELPERS
-========================================================= */
-
-function showLoginError(
-    message
-) {
-
-    if (loginMessage) {
-
-        loginMessage.textContent =
-            message;
-
-    }
-
-}
-
-
-function setLoginLoading(
-    loading
-) {
-
-    if (!loginButton) {
-        return;
-    }
-
-
-    loginButton.disabled =
-        loading;
-
-
-    loginButton.textContent =
-        loading
-            ? "Signing In..."
-            : "Sign In";
-
-}
-
-
-/* =========================================================
    LOGOUT
 ========================================================= */
 
@@ -945,22 +931,31 @@ if (logoutButton) {
         "click",
         async () => {
 
-            await supabaseClient
-                .auth
-                .signOut();
+            try {
 
+                await supabaseClient
+                    .auth
+                    .signOut();
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+            }
 
             products = [];
-
+            orders = [];
+            customers = [];
+            orderItems = [];
 
             showLogin();
 
-
             if (loginPassword) {
-
                 loginPassword.value =
                     "";
-
             }
 
         }
@@ -991,22 +986,17 @@ supabaseClient.auth.onAuthStateChange(
 
         }
 
-
         const user =
             session.user;
 
-
         if (
-            user.email
-                ?.toLowerCase() !==
-            ADMIN_EMAIL
-                .toLowerCase()
+            user.email?.toLowerCase() !==
+            ADMIN_EMAIL.toLowerCase()
         ) {
 
             await supabaseClient
                 .auth
                 .signOut();
-
 
             showLogin();
 
@@ -1014,13 +1004,66 @@ supabaseClient.auth.onAuthStateChange(
 
         }
 
+        if (!loadingAdmin) {
 
-        await showAdminApp(
-            user
-        );
+            await showAdminApp(
+                user
+            );
+
+        }
 
     }
 );
+
+
+/* =========================================================
+   LOAD ALL ADMIN DATA
+========================================================= */
+
+async function loadAllAdminData() {
+
+    if (loadingAdmin) {
+        return;
+    }
+
+    loadingAdmin =
+        true;
+
+    try {
+
+        await Promise.all([
+            loadProducts(),
+            loadCustomers(),
+            loadOrders(),
+            loadOrderItems()
+        ]);
+
+        updateDashboard();
+
+        renderAdminProducts();
+
+        renderMiniProducts();
+
+        renderAdminOrders();
+
+        renderAdminCustomers();
+
+        renderRecentOrders();
+
+    } catch (error) {
+
+        console.error(
+            "Admin data loading error:",
+            error
+        );
+
+    } finally {
+
+        loadingAdmin =
+            false;
+
+    }
+}
 
 
 /* =========================================================
@@ -1037,61 +1080,24 @@ async function loadProducts() {
         } =
             await supabaseClient
                 .from(
-                    "products"
+                    PRODUCTS_TABLE
                 )
                 .select("*")
                 .order(
                     "created_at",
                     {
-                        ascending: true
+                        ascending: false
                     }
                 );
-
 
         if (error) {
             throw error;
         }
 
-
         products =
             Array.isArray(data)
                 ? data
                 : [];
-
-
-        console.log(
-            "ORACLE GADGET PRODUCTS:",
-            products
-        );
-
-
-        /*
-           Log image paths so we can see
-           exactly what Supabase returns.
-        */
-
-        products.forEach(
-            product => {
-
-                console.log(
-                    "PRODUCT IMAGE:",
-                    product.name,
-                    product.image_url,
-                    getImageCandidates(
-                        product.image_url
-                    )
-                );
-
-            }
-        );
-
-
-        updateDashboard();
-
-        renderAdminProducts();
-
-        renderMiniProducts();
-
 
     } catch (error) {
 
@@ -1100,14 +1106,205 @@ async function loadProducts() {
             error
         );
 
-
-        alert(
-            "Unable to load products: " +
-            error.message
-        );
+        products = [];
 
     }
+}
 
+
+/* =========================================================
+   LOAD CUSTOMERS
+
+   IMPORTANT:
+   TABLE = customer
+========================================================= */
+
+async function loadCustomers() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from(
+                    CUSTOMER_TABLE
+                )
+                .select(
+                    "id,full_name,phone,delivery_address,created_at,updated_at"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        customers =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        console.log(
+            "ORACLE CUSTOMERS:",
+            customers
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load customers error:",
+            error
+        );
+
+        console.error(
+            "Customer error details:",
+            getSupabaseErrorMessage(
+                error
+            )
+        );
+
+        customers = [];
+
+    }
+}
+
+
+/* =========================================================
+   LOAD ORDERS
+========================================================= */
+
+async function loadOrders() {
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from(
+                    ORDERS_TABLE
+                )
+                .select(
+                    "id,customer_id,status,total,created_at,updated_at,order_reference,delivery_address,quantity,subtotal"
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: false
+                    }
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        orders =
+            Array.isArray(data)
+                ? data
+                : [];
+
+        console.log(
+            "ORACLE ORDERS:",
+            orders
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load orders error:",
+            error
+        );
+
+        console.error(
+            "Order error details:",
+            getSupabaseErrorMessage(
+                error
+            )
+        );
+
+        orders = [];
+
+    }
+}
+
+
+/* =========================================================
+   LOAD ORDER ITEMS
+========================================================= */
+
+async function loadOrderItems() {
+
+    try {
+
+        if (!orders.length) {
+
+            orderItems = [];
+
+            return;
+
+        }
+
+        const orderIds =
+            orders.map(
+                order =>
+                    order.id
+            );
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from(
+                    ORDER_ITEMS_TABLE
+                )
+                .select(
+                    "id,order_id,product_id,product_name,storage,color,quantity,unit_price,subtotal,created_at"
+                )
+                .in(
+                    "order_id",
+                    orderIds
+                )
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        orderItems =
+            Array.isArray(data)
+                ? data
+                : [];
+
+    } catch (error) {
+
+        console.error(
+            "Load order items error:",
+            error
+        );
+
+        console.error(
+            "Order items error details:",
+            getSupabaseErrorMessage(
+                error
+            )
+        );
+
+        orderItems = [];
+
+    }
 }
 
 
@@ -1120,83 +1317,114 @@ function updateDashboard() {
     const total =
         products.length;
 
-
     const available =
         products.filter(
             product =>
                 String(
                     product.status
-                )
-                    .toLowerCase() ===
+                ).toLowerCase() ===
                 "available"
         ).length;
-
 
     const sold =
         products.filter(
             product =>
                 String(
                     product.status
-                )
-                    .toLowerCase() !==
+                ).toLowerCase() !==
                 "available"
         ).length;
-
 
     const value =
         products.reduce(
             (
-                totalValue,
+                sum,
                 product
-            ) => {
-
-                return (
-                    totalValue +
-                    (
-                        Number(
-                            product.price
-                        ) || 0
-                    )
-                );
-
-            },
+            ) =>
+                sum +
+                (
+                    Number(
+                        product.price
+                    ) || 0
+                ),
             0
         );
 
+    const pending =
+        orders.filter(
+            order =>
+                String(
+                    order.status
+                ).toLowerCase() ===
+                "pending"
+        ).length;
+
+    const sales =
+        orders
+            .filter(
+                order =>
+                    String(
+                        order.status
+                    ).toLowerCase() !==
+                    "cancelled"
+            )
+            .reduce(
+                (
+                    sum,
+                    order
+                ) =>
+                    sum +
+                    (
+                        Number(
+                            order.total
+                        ) || 0
+                    ),
+                0
+            );
 
     if (totalProducts) {
-
         totalProducts.textContent =
             total;
-
     }
-
 
     if (availableProducts) {
-
         availableProducts.textContent =
             available;
-
     }
-
 
     if (soldProducts) {
-
         soldProducts.textContent =
             sold;
-
     }
 
-
     if (productValue) {
-
         productValue.textContent =
             formatPrice(
                 value
             );
-
     }
 
+    if (totalOrders) {
+        totalOrders.textContent =
+            orders.length;
+    }
+
+    if (totalCustomers) {
+        totalCustomers.textContent =
+            customers.length;
+    }
+
+    if (pendingOrders) {
+        pendingOrders.textContent =
+            pending;
+    }
+
+    if (totalSales) {
+        totalSales.textContent =
+            formatPrice(
+                sales
+            );
+    }
 }
 
 
@@ -1210,23 +1438,17 @@ function renderMiniProducts() {
         return;
     }
 
-
     miniProducts.innerHTML =
         "";
 
-
     if (!products.length) {
 
-        miniProducts.innerHTML = `
-            <p>
-                No products found.
-            </p>
-        `;
+        miniProducts.innerHTML =
+            "<p>No products found.</p>";
 
         return;
 
     }
-
 
     products
         .slice(
@@ -1241,10 +1463,8 @@ function renderMiniProducts() {
                         "div"
                     );
 
-
                 item.className =
                     "mini-product";
-
 
                 item.innerHTML = `
 
@@ -1272,19 +1492,13 @@ function renderMiniProducts() {
 
                 `;
 
-
-                const img =
+                setImageWithFallbacks(
                     item.querySelector(
                         "img"
-                    );
-
-
-                setImageWithFallbacks(
-                    img,
+                    ),
                     product.image_url,
                     product.name
                 );
-
 
                 miniProducts.appendChild(
                     item
@@ -1292,12 +1506,11 @@ function renderMiniProducts() {
 
             }
         );
-
 }
 
 
 /* =========================================================
-   RENDER ADMIN PRODUCTS
+   RENDER PRODUCTS
 ========================================================= */
 
 function renderAdminProducts() {
@@ -1306,7 +1519,6 @@ function renderAdminProducts() {
         return;
     }
 
-
     const search =
         adminSearch
             ? adminSearch.value
@@ -1314,41 +1526,39 @@ function renderAdminProducts() {
                 .toLowerCase()
             : "";
 
-
     const status =
         adminStatusFilter
             ? adminStatusFilter.value
             : "all";
 
-
     const filtered =
         products.filter(
             product => {
 
-                const searchable = `
+                const searchable = [
 
-                    ${product.name || ""}
+                    product.name,
 
-                    ${product.description || ""}
+                    product.description,
 
-                    ${product.storage || ""}
+                    product.storage,
 
-                    ${product.condition || ""}
+                    product.condition
 
-                `.toLowerCase();
-
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
 
                 const matchesSearch =
                     searchable.includes(
                         search
                     );
 
-
                 const matchesStatus =
                     status === "all" ||
                     product.status ===
                         status;
-
 
                 return (
                     matchesSearch &&
@@ -1358,27 +1568,19 @@ function renderAdminProducts() {
             }
         );
 
-
     adminProducts.innerHTML =
         "";
-
 
     if (!filtered.length) {
 
         adminProducts.innerHTML = `
-
             <div class="products-empty">
-
                 No products found.
-
             </div>
-
         `;
 
         return;
-
     }
-
 
     filtered.forEach(
         product => {
@@ -1388,18 +1590,14 @@ function renderAdminProducts() {
                     "article"
                 );
 
-
             const available =
                 String(
                     product.status
-                )
-                    .toLowerCase() ===
+                ).toLowerCase() ===
                 "available";
-
 
             card.className =
                 "admin-product-card";
-
 
             card.innerHTML = `
 
@@ -1438,9 +1636,7 @@ function renderAdminProducts() {
                     </h3>
 
 
-                    <p class="
-                        admin-product-description
-                    ">
+                    <p class="admin-product-description">
 
                         ${escapeHTML(
                             product.description
@@ -1449,9 +1645,7 @@ function renderAdminProducts() {
                     </p>
 
 
-                    <div class="
-                        admin-product-price
-                    ">
+                    <div class="admin-product-price">
 
                         ${formatPrice(
                             product.price
@@ -1460,9 +1654,7 @@ function renderAdminProducts() {
                     </div>
 
 
-                    <div class="
-                        product-actions
-                    ">
+                    <div class="product-actions">
 
                         <button
                             type="button"
@@ -1491,19 +1683,13 @@ function renderAdminProducts() {
 
             `;
 
-
-            const image =
+            setImageWithFallbacks(
                 card.querySelector(
                     "img"
-                );
-
-
-            setImageWithFallbacks(
-                image,
+                ),
                 product.image_url,
                 product.name
             );
-
 
             adminProducts.appendChild(
                 card
@@ -1512,14 +1698,12 @@ function renderAdminProducts() {
         }
     );
 
-
     attachProductActions();
-
 }
 
 
 /* =========================================================
-   PRODUCT ACTION BUTTONS
+   PRODUCT ACTIONS
 ========================================================= */
 
 function attachProductActions() {
@@ -1545,7 +1729,6 @@ function attachProductActions() {
             }
         );
 
-
     document
         .querySelectorAll(
             ".delete-product"
@@ -1566,7 +1749,6 @@ function attachProductActions() {
 
             }
         );
-
 }
 
 
@@ -1579,68 +1761,46 @@ function openAddProduct() {
     editingProduct =
         null;
 
-
     selectedImageFile =
         null;
 
-
     if (productForm) {
-
         productForm.reset();
-
     }
-
 
     if (productId) {
-
         productId.value =
             "";
-
     }
-
 
     if (productModalTitle) {
-
         productModalTitle.textContent =
             "Add Product";
-
     }
-
 
     if (saveProduct) {
-
         saveProduct.textContent =
             "Save Product";
-
     }
 
-
     clearColorSelections();
-
 
     if (imagePreview) {
 
         imagePreview.innerHTML = `
-
             <span>
                 No image selected
             </span>
-
         `;
 
     }
 
-
     if (productMessage) {
-
         productMessage.textContent =
             "";
-
     }
 
-
     openProductModal();
-
 }
 
 
@@ -1663,95 +1823,45 @@ function openEditProduct(
                 )
         );
 
-
     if (!product) {
         return;
     }
 
-
     editingProduct =
         product;
-
 
     selectedImageFile =
         null;
 
+    productModalTitle.textContent =
+        "Edit Product";
 
-    if (productModalTitle) {
+    saveProduct.textContent =
+        "Update Product";
 
-        productModalTitle.textContent =
-            "Edit Product";
+    productId.value =
+        product.id;
 
-    }
+    productName.value =
+        product.name || "";
 
+    productPrice.value =
+        product.price || "";
 
-    if (saveProduct) {
+    productStorage.value =
+        product.storage || "";
 
-        saveProduct.textContent =
-            "Update Product";
+    productCondition.value =
+        product.condition || "";
 
-    }
+    productStatus.value =
+        product.status ||
+        "Available";
 
-
-    if (productId) {
-
-        productId.value =
-            product.id;
-
-    }
-
-
-    if (productName) {
-
-        productName.value =
-            product.name || "";
-
-    }
-
-
-    if (productPrice) {
-
-        productPrice.value =
-            product.price || "";
-
-    }
-
-
-    if (productStorage) {
-
-        productStorage.value =
-            product.storage || "";
-
-    }
-
-
-    if (productCondition) {
-
-        productCondition.value =
-            product.condition || "";
-
-    }
-
-
-    if (productStatus) {
-
-        productStatus.value =
-            product.status ||
-            "Available";
-
-    }
-
-
-    if (productDescription) {
-
-        productDescription.value =
-            product.description || "";
-
-    }
-
+    productDescription.value =
+        product.description || "";
 
     clearColorSelections();
-
 
     const colors =
         Array.isArray(
@@ -1759,7 +1869,6 @@ function openEditProduct(
         )
             ? product.colors
             : [];
-
 
     document
         .querySelectorAll(
@@ -1776,50 +1885,31 @@ function openEditProduct(
             }
         );
 
+    imagePreview.innerHTML = `
+        <img
+            alt="${escapeAttribute(
+                product.name
+            )}"
+        >
+    `;
 
-    if (imagePreview) {
+    setImageWithFallbacks(
+        imagePreview.querySelector(
+            "img"
+        ),
+        product.image_url,
+        product.name
+    );
 
-        imagePreview.innerHTML = `
-
-            <img
-                alt="${escapeAttribute(
-                    product.name
-                )}"
-            >
-
-        `;
-
-
-        const previewImage =
-            imagePreview.querySelector(
-                "img"
-            );
-
-
-        setImageWithFallbacks(
-            previewImage,
-            product.image_url,
-            product.name
-        );
-
-    }
-
-
-    if (productMessage) {
-
-        productMessage.textContent =
-            "";
-
-    }
-
+    productMessage.textContent =
+        "";
 
     openProductModal();
-
 }
 
 
 /* =========================================================
-   OPEN MODAL
+   OPEN PRODUCT MODAL
 ========================================================= */
 
 function openProductModal() {
@@ -1828,77 +1918,64 @@ function openProductModal() {
         return;
     }
 
-
     productModal.hidden =
         false;
 
-
     document.body.style.overflow =
         "hidden";
-
 }
 
 
 /* =========================================================
-   CLOSE MODAL
+   CLOSE PRODUCT MODAL
 ========================================================= */
 
 function closeModal() {
 
     if (productModal) {
-
         productModal.hidden =
             true;
-
     }
-
 
     document.body.style.overflow =
         "";
 
-
     editingProduct =
         null;
 
-
     selectedImageFile =
         null;
-
-}
-
-
-if (closeProductModal) {
-
-    closeProductModal.addEventListener(
-        "click",
-        closeModal
-    );
-
-}
-
-
-if (cancelProduct) {
-
-    cancelProduct.addEventListener(
-        "click",
-        closeModal
-    );
-
-}
-
-
-if (productModalOverlay) {
-
-    productModalOverlay.addEventListener(
-        "click",
-        closeModal
-    );
-
 }
 
 
 /* =========================================================
-   IMAGE PREVIEW
+   MODAL EVENTS
+========================================================= */
+
+if (closeProductModal) {
+    closeProductModal.addEventListener(
+        "click",
+        closeModal
+    );
+}
+
+if (cancelProduct) {
+    cancelProduct.addEventListener(
+        "click",
+        closeModal
+    );
+}
+
+if (productModalOverlay) {
+    productModalOverlay.addEventListener(
+        "click",
+        closeModal
+    );
+}
+
+
+/* =========================================================
+   IMAGE SELECTION
 ========================================================= */
 
 if (productImage) {
@@ -1908,14 +1985,11 @@ if (productImage) {
         event => {
 
             const file =
-                event.target
-                    .files?.[0];
-
+                event.target.files?.[0];
 
             if (!file) {
                 return;
             }
-
 
             if (
                 !file.type.startsWith(
@@ -1923,50 +1997,33 @@ if (productImage) {
                 )
             ) {
 
-                if (productMessage) {
-
-                    productMessage.textContent =
-                        "Please select a valid image.";
-
-                }
-
+                productMessage.textContent =
+                    "Please select a valid image.";
 
                 productImage.value =
                     "";
-
 
                 return;
 
             }
 
-
             selectedImageFile =
                 file;
-
 
             const reader =
                 new FileReader();
 
-
             reader.onload =
                 event => {
 
-                    if (!imagePreview) {
-                        return;
-                    }
-
-
                     imagePreview.innerHTML = `
-
                         <img
                             src="${event.target.result}"
                             alt="Selected image"
                         >
-
                     `;
 
                 };
-
 
             reader.readAsDataURL(
                 file
@@ -1979,7 +2036,7 @@ if (productImage) {
 
 
 /* =========================================================
-   SAVE PRODUCT
+   SAVE PRODUCT FORM
 ========================================================= */
 
 if (productForm) {
@@ -1990,7 +2047,6 @@ if (productForm) {
 
             event.preventDefault();
 
-
             await saveProductToDatabase();
 
         }
@@ -2000,92 +2056,58 @@ if (productForm) {
 
 
 /* =========================================================
-   SAVE PRODUCT TO DATABASE
+   SAVE PRODUCT
 ========================================================= */
 
 async function saveProductToDatabase() {
 
-    if (!saveProduct) {
-        return;
-    }
-
-
-    /*
-       Keep a copy because closeModal()
-       clears editingProduct.
-    */
-
     const productBeingEdited =
         editingProduct;
 
-
-    if (productMessage) {
-
-        productMessage.textContent =
-            "";
-
-    }
-
-
     saveProduct.disabled =
         true;
-
 
     saveProduct.textContent =
         productBeingEdited
             ? "Updating..."
             : "Saving...";
 
+    productMessage.textContent =
+        "";
 
     try {
 
         const name =
-            productName.value
-                .trim();
-
+            productName.value.trim();
 
         const price =
             Number(
                 productPrice.value
             );
 
-
         const storage =
-            productStorage.value
-                .trim();
-
+            productStorage.value.trim();
 
         const condition =
-            productCondition.value
-                .trim();
-
+            productCondition.value.trim();
 
         const status =
             productStatus.value;
 
-
         const description =
-            productDescription.value
-                .trim();
-
+            productDescription.value.trim();
 
         const colors =
             getSelectedColors();
 
-
         if (!name) {
-
             throw new Error(
                 "Product name is required."
             );
-
         }
 
-
         if (
-            !Number.isFinite(
-                price
-            ) ||
+            !Number.isFinite(price) ||
             price < 0
         ) {
 
@@ -2095,87 +2117,43 @@ async function saveProductToDatabase() {
 
         }
 
-
         if (!storage) {
-
             throw new Error(
                 "Storage is required."
             );
-
         }
 
-
         if (!condition) {
-
             throw new Error(
                 "Condition is required."
             );
-
         }
 
-
         if (!description) {
-
             throw new Error(
                 "Description is required."
             );
-
         }
 
-
         if (!colors.length) {
-
             throw new Error(
                 "Select at least one color."
             );
-
         }
-
 
         let imagePath =
             productBeingEdited
                 ?.image_url ||
             "";
 
-
-        /*
-           UPLOAD NEW IMAGE
-        */
-
         if (selectedImageFile) {
 
-            const uploadedPath =
+            imagePath =
                 await uploadProductImage(
                     selectedImageFile
                 );
 
-
-            imagePath =
-                uploadedPath;
-
-
-            /*
-               Delete old image after
-               successful new upload.
-            */
-
-            if (
-                productBeingEdited &&
-                productBeingEdited.image_url
-            ) {
-
-                await deleteStorageImage(
-                    productBeingEdited.image_url
-                );
-
-            }
-
         }
-
-
-        /*
-           NEW PRODUCT REQUIRES IMAGE
-        */
 
         if (
             !productBeingEdited &&
@@ -2187,7 +2165,6 @@ async function saveProductToDatabase() {
             );
 
         }
-
 
         const productData = {
 
@@ -2210,11 +2187,6 @@ async function saveProductToDatabase() {
 
         };
 
-
-        /*
-           INSERT
-        */
-
         if (!productBeingEdited) {
 
             const {
@@ -2222,32 +2194,24 @@ async function saveProductToDatabase() {
             } =
                 await supabaseClient
                     .from(
-                        "products"
+                        PRODUCTS_TABLE
                     )
                     .insert(
                         productData
                     );
 
-
             if (error) {
                 throw error;
             }
 
-        }
-
-
-        /*
-           UPDATE
-        */
-
-        else {
+        } else {
 
             const {
                 error
             } =
                 await supabaseClient
                     .from(
-                        "products"
+                        PRODUCTS_TABLE
                     )
                     .update(
                         productData
@@ -2257,26 +2221,38 @@ async function saveProductToDatabase() {
                         productBeingEdited.id
                     );
 
-
             if (error) {
                 throw error;
             }
 
-        }
+            if (
+                selectedImageFile &&
+                productBeingEdited.image_url
+            ) {
 
+                await deleteStorageImage(
+                    productBeingEdited.image_url
+                );
+
+            }
+
+        }
 
         closeModal();
 
-
         await loadProducts();
 
+        updateDashboard();
+
+        renderAdminProducts();
+
+        renderMiniProducts();
 
         alert(
             productBeingEdited
                 ? "Product updated successfully."
                 : "Product added successfully."
         );
-
 
     } catch (error) {
 
@@ -2285,21 +2261,15 @@ async function saveProductToDatabase() {
             error
         );
 
-
-        if (productMessage) {
-
-            productMessage.textContent =
-                error.message ||
-                "Unable to save product.";
-
-        }
-
+        productMessage.textContent =
+            getSupabaseErrorMessage(
+                error
+            );
 
     } finally {
 
         saveProduct.disabled =
             false;
-
 
         saveProduct.textContent =
             productBeingEdited
@@ -2307,12 +2277,11 @@ async function saveProductToDatabase() {
                 : "Save Product";
 
     }
-
 }
 
 
 /* =========================================================
-   UPLOAD PRODUCT IMAGE
+   UPLOAD IMAGE
 ========================================================= */
 
 async function uploadProductImage(
@@ -2320,13 +2289,10 @@ async function uploadProductImage(
 ) {
 
     if (!file) {
-
         throw new Error(
             "No image selected."
         );
-
     }
-
 
     const safeName =
         file.name
@@ -2336,19 +2302,11 @@ async function uploadProductImage(
                 "-"
             );
 
-
     const uniqueName =
         `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
 
-
-    /*
-       New uploads continue going into
-       the existing ORACLE folder.
-    */
-
     const path =
         `${STORAGE_FOLDER}/${uniqueName}`;
-
 
     const {
         error
@@ -2370,14 +2328,11 @@ async function uploadProductImage(
                 }
             );
 
-
     if (error) {
         throw error;
     }
 
-
     return path;
-
 }
 
 
@@ -2393,16 +2348,10 @@ async function deleteStorageImage(
         return;
     }
 
-
     let path =
         String(
             imagePath
         ).trim();
-
-
-    /*
-       Full URL handling.
-    */
 
     if (
         path.startsWith(
@@ -2416,67 +2365,34 @@ async function deleteStorageImage(
         const marker =
             `/storage/v1/object/public/${STORAGE_BUCKET}/`;
 
-
-        const markerIndex =
+        const index =
             path.indexOf(
                 marker
             );
 
-
         if (
-            markerIndex ===
+            index ===
             -1
         ) {
-
             return;
-
         }
-
 
         path =
             path.substring(
-                markerIndex +
+                index +
                 marker.length
             );
 
     }
 
-
     path =
         decodeURIComponent(
             path
-        );
-
-
-    path =
-        path.replace(
+        )
+        .replace(
             /^\/+/,
             ""
         );
-
-
-    /*
-       If the path already contains
-       the folder, keep it.
-
-       Otherwise assume it is in
-       oraimages.
-    */
-
-    if (
-        !path
-            .toLowerCase()
-            .startsWith(
-                `${STORAGE_FOLDER}/`
-                    .toLowerCase()
-            )
-    ) {
-
-        path =
-            `${STORAGE_FOLDER}/${path}`;
-
-    }
-
 
     const {
         error
@@ -2490,16 +2406,14 @@ async function deleteStorageImage(
                 path
             ]);
 
-
     if (error) {
 
         console.warn(
-            "Storage image could not be deleted:",
+            "Storage deletion failed:",
             error
         );
 
     }
-
 }
 
 
@@ -2522,37 +2436,28 @@ async function deleteProduct(
                 )
         );
 
-
     if (!product) {
         return;
     }
 
-
     const confirmed =
         confirm(
             `Delete ${product.name}?\n\n` +
-            `This will remove the product from the website ` +
-            `and delete its image from Storage.`
+            `This will remove the product from the website.`
         );
-
 
     if (!confirmed) {
         return;
     }
 
-
     try {
-
-        /*
-           Delete database row.
-        */
 
         const {
             error
         } =
             await supabaseClient
                 .from(
-                    "products"
+                    PRODUCTS_TABLE
                 )
                 .delete()
                 .eq(
@@ -2560,23 +2465,9 @@ async function deleteProduct(
                     product.id
                 );
 
-
         if (error) {
             throw error;
         }
-
-
-        /*
-           Delete image.
-
-           This supports both:
-
-           product-images/iphone xr.jpg
-
-           and:
-
-           product-images/oraimages/filename.jpg
-        */
 
         if (
             product.image_url
@@ -2588,14 +2479,17 @@ async function deleteProduct(
 
         }
 
-
         await loadProducts();
 
+        updateDashboard();
+
+        renderAdminProducts();
+
+        renderMiniProducts();
 
         alert(
             "Product deleted successfully."
         );
-
 
     } catch (error) {
 
@@ -2604,19 +2498,19 @@ async function deleteProduct(
             error
         );
 
-
         alert(
             "Unable to delete product:\n\n" +
-            error.message
+            getSupabaseErrorMessage(
+                error
+            )
         );
 
     }
-
 }
 
 
 /* =========================================================
-   COLOR HELPERS
+   COLORS
 ========================================================= */
 
 function getSelectedColors() {
@@ -2624,7 +2518,6 @@ function getSelectedColors() {
     if (!colorGrid) {
         return [];
     }
-
 
     return Array.from(
         colorGrid.querySelectorAll(
@@ -2634,7 +2527,6 @@ function getSelectedColors() {
         checkbox =>
             checkbox.value
     );
-
 }
 
 
@@ -2643,7 +2535,6 @@ function clearColorSelections() {
     if (!colorGrid) {
         return;
     }
-
 
     colorGrid
         .querySelectorAll(
@@ -2657,63 +2548,820 @@ function clearColorSelections() {
 
             }
         );
-
 }
 
 
 /* =========================================================
-   ESCAPE HTML
+   GET CUSTOMER
 ========================================================= */
 
-function escapeHTML(
-    value
+function getCustomerById(
+    id
 ) {
 
-    const div =
-        document.createElement(
-            "div"
-        );
-
-
-    div.textContent =
-        String(
-            value ?? ""
-        );
-
-
-    return div.innerHTML;
-
+    return customers.find(
+        customer =>
+            String(
+                customer.id
+            ) ===
+            String(
+                id
+            )
+    );
 }
 
 
 /* =========================================================
-   ESCAPE ATTRIBUTE
+   GET ORDER ITEMS
 ========================================================= */
 
-function escapeAttribute(
-    value
+function getItemsForOrder(
+    orderId
 ) {
 
-    return String(
-        value ?? ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
+    return orderItems.filter(
+        item =>
+            String(
+                item.order_id
+            ) ===
+            String(
+                orderId
+            )
+    );
+}
+
+
+/* =========================================================
+   RENDER ORDERS
+========================================================= */
+
+function renderAdminOrders() {
+
+    if (!adminOrders) {
+        return;
+    }
+
+    const search =
+        orderSearch
+            ? orderSearch.value
+                .trim()
+                .toLowerCase()
+            : "";
+
+    const status =
+        orderStatusFilter
+            ? orderStatusFilter.value
+            : "all";
+
+    const filtered =
+        orders.filter(
+            order => {
+
+                const customer =
+                    getCustomerById(
+                        order.customer_id
+                    );
+
+                const searchable = [
+
+                    order.order_reference,
+
+                    order.status,
+
+                    order.delivery_address,
+
+                    customer?.full_name,
+
+                    customer?.phone
+
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+
+                const matchesSearch =
+                    searchable.includes(
+                        search
+                    );
+
+                const matchesStatus =
+                    status === "all" ||
+                    String(
+                        order.status
+                    ).toLowerCase() ===
+                    status;
+
+                return (
+                    matchesSearch &&
+                    matchesStatus
+                );
+
+            }
         );
 
+    adminOrders.innerHTML =
+        "";
+
+    if (!filtered.length) {
+
+        adminOrders.innerHTML = `
+            <div class="products-empty">
+                No orders found.
+            </div>
+        `;
+
+        return;
+    }
+
+    filtered.forEach(
+        order => {
+
+            const customer =
+                getCustomerById(
+                    order.customer_id
+                );
+
+            const items =
+                getItemsForOrder(
+                    order.id
+                );
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+            card.className =
+                "dashboard-card";
+
+            const itemHTML =
+                items.length
+                    ? items.map(
+                        item => `
+                            <div>
+                                <strong>
+                                    ${escapeHTML(
+                                        item.product_name
+                                    )}
+                                </strong>
+
+                                — ${escapeHTML(
+                                    item.storage || ""
+                                )}
+
+                                ${item.color
+                                    ? ` — ${escapeHTML(
+                                        item.color
+                                    )}`
+                                    : ""}
+
+                                × ${Number(
+                                    item.quantity
+                                ) || 0}
+                            </div>
+                        `
+                    ).join("")
+                    : "<div>No item details found.</div>";
+
+            card.innerHTML = `
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <p class="admin-label">
+                            ORDER
+                        </p>
+
+                        <h2>
+                            ${escapeHTML(
+                                order.order_reference ||
+                                order.id
+                            )}
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <p>
+                        <strong>Customer:</strong>
+                        ${escapeHTML(
+                            customer?.full_name ||
+                            "Unknown customer"
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>Phone:</strong>
+                        ${escapeHTML(
+                            customer?.phone ||
+                            "—"
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>Delivery:</strong>
+                        ${escapeHTML(
+                            order.delivery_address ||
+                            customer?.delivery_address ||
+                            "—"
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>Date:</strong>
+                        ${formatDate(
+                            order.created_at
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>Quantity:</strong>
+                        ${Number(
+                            order.quantity
+                        ) || 0}
+                    </p>
+
+
+                    <p>
+                        <strong>Total:</strong>
+                        ${formatPrice(
+                            order.total
+                        )}
+                    </p>
+
+
+                    <p>
+                        <strong>Status:</strong>
+
+                        <select
+                            class="order-status-select"
+                            data-order-id="${escapeAttribute(
+                                order.id
+                            )}"
+                        >
+
+                            <option
+                                value="pending"
+                                ${String(order.status).toLowerCase() === "pending" ? "selected" : ""}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="processing"
+                                ${String(order.status).toLowerCase() === "processing" ? "selected" : ""}
+                            >
+                                Processing
+                            </option>
+
+                            <option
+                                value="completed"
+                                ${String(order.status).toLowerCase() === "completed" ? "selected" : ""}
+                            >
+                                Completed
+                            </option>
+
+                            <option
+                                value="cancelled"
+                                ${String(order.status).toLowerCase() === "cancelled" ? "selected" : ""}
+                            >
+                                Cancelled
+                            </option>
+
+                        </select>
+
+                    </p>
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        Order Items
+                    </strong>
+
+                    <div style="margin-top:10px;">
+                        ${itemHTML}
+                    </div>
+
+                </div>
+
+
+                <div class="product-actions">
+
+                    <button
+                        type="button"
+                        class="delete-order"
+                        data-id="${escapeAttribute(
+                            order.id
+                        )}"
+                    >
+                        Delete Order
+                    </button>
+
+                </div>
+
+            `;
+
+            adminOrders.appendChild(
+                card
+            );
+
+        }
+    );
+
+    attachOrderActions();
+}
+
+
+/* =========================================================
+   ORDER ACTIONS
+========================================================= */
+
+function attachOrderActions() {
+
+    document
+        .querySelectorAll(
+            ".order-status-select"
+        )
+        .forEach(
+            select => {
+
+                select.addEventListener(
+                    "change",
+                    async () => {
+
+                        await updateOrderStatus(
+                            select.dataset.orderId,
+                            select.value
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    document
+        .querySelectorAll(
+            ".delete-order"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    async () => {
+
+                        await deleteOrder(
+                            button.dataset.id
+                        );
+
+                    }
+                );
+
+            }
+        );
+}
+
+
+/* =========================================================
+   UPDATE ORDER STATUS
+========================================================= */
+
+async function updateOrderStatus(
+    orderId,
+    status
+) {
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from(
+                    ORDERS_TABLE
+                )
+                .update({
+                    status
+                })
+                .eq(
+                    "id",
+                    orderId
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        const order =
+            orders.find(
+                item =>
+                    String(
+                        item.id
+                    ) ===
+                    String(
+                        orderId
+                    )
+            );
+
+        if (order) {
+            order.status =
+                status;
+        }
+
+        updateDashboard();
+
+        renderAdminOrders();
+
+        renderRecentOrders();
+
+    } catch (error) {
+
+        console.error(
+            "Update order status error:",
+            error
+        );
+
+        alert(
+            "Unable to update order:\n\n" +
+            getSupabaseErrorMessage(
+                error
+            )
+        );
+
+        renderAdminOrders();
+
+    }
+}
+
+
+/* =========================================================
+   DELETE ORDER
+========================================================= */
+
+async function deleteOrder(
+    orderId
+) {
+
+    const order =
+        orders.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(
+                    orderId
+                )
+        );
+
+    if (!order) {
+        return;
+    }
+
+    const confirmed =
+        confirm(
+            `Delete order ${
+                order.order_reference ||
+                order.id
+            }?\n\n` +
+            `The order items and order record will be deleted.`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const {
+            error:
+                itemDeleteError
+        } =
+            await supabaseClient
+                .from(
+                    ORDER_ITEMS_TABLE
+                )
+                .delete()
+                .eq(
+                    "order_id",
+                    order.id
+                );
+
+        if (itemDeleteError) {
+            throw itemDeleteError;
+        }
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from(
+                    ORDERS_TABLE
+                )
+                .delete()
+                .eq(
+                    "id",
+                    order.id
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        await loadOrders();
+
+        await loadOrderItems();
+
+        updateDashboard();
+
+        renderAdminOrders();
+
+        renderRecentOrders();
+
+        alert(
+            "Order deleted successfully."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Delete order error:",
+            error
+        );
+
+        alert(
+            "Unable to delete order:\n\n" +
+            getSupabaseErrorMessage(
+                error
+            )
+        );
+
+    }
+}
+
+
+/* =========================================================
+   RECENT ORDERS
+========================================================= */
+
+function renderRecentOrders() {
+
+    if (!recentOrders) {
+        return;
+    }
+
+    recentOrders.innerHTML =
+        "";
+
+    if (!orders.length) {
+
+        recentOrders.innerHTML =
+            "<p>No orders yet.</p>";
+
+        return;
+    }
+
+    orders
+        .slice(
+            0,
+            5
+        )
+        .forEach(
+            order => {
+
+                const customer =
+                    getCustomerById(
+                        order.customer_id
+                    );
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "mini-product";
+
+                row.innerHTML = `
+
+                    <div class="mini-product-info">
+
+                        <strong>
+
+                            ${escapeHTML(
+                                order.order_reference ||
+                                order.id
+                            )}
+
+                        </strong>
+
+                        <span>
+
+                            ${escapeHTML(
+                                customer?.full_name ||
+                                "Unknown"
+                            )}
+
+                        </span>
+
+                        <span>
+
+                            ${formatPrice(
+                                order.total
+                            )}
+
+                        </span>
+
+                        <small>
+
+                            ${formatDate(
+                                order.created_at
+                            )}
+
+                        </small>
+
+                    </div>
+
+                `;
+
+                recentOrders.appendChild(
+                    row
+                );
+
+            }
+        );
+}
+
+
+/* =========================================================
+   RENDER CUSTOMERS
+========================================================= */
+
+function renderAdminCustomers() {
+
+    if (!adminCustomers) {
+        return;
+    }
+
+    const search =
+        customerSearch
+            ? customerSearch.value
+                .trim()
+                .toLowerCase()
+            : "";
+
+    const filtered =
+        customers.filter(
+            customer => {
+
+                const searchable = [
+
+                    customer.full_name,
+
+                    customer.phone,
+
+                    customer.delivery_address
+
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+
+                return searchable.includes(
+                    search
+                );
+
+            }
+        );
+
+    adminCustomers.innerHTML =
+        "";
+
+    if (!filtered.length) {
+
+        adminCustomers.innerHTML = `
+            <div class="products-empty">
+                No customers found.
+            </div>
+        `;
+
+        return;
+    }
+
+    filtered.forEach(
+        customer => {
+
+            const customerOrders =
+                orders.filter(
+                    order =>
+                        String(
+                            order.customer_id
+                        ) ===
+                        String(
+                            customer.id
+                        )
+                );
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+            card.className =
+                "dashboard-card";
+
+            card.innerHTML = `
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <p class="admin-label">
+                            CUSTOMER
+                        </p>
+
+                        <h2>
+                            ${escapeHTML(
+                                customer.full_name
+                            )}
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <p>
+
+                    <strong>
+                        Phone:
+                    </strong>
+
+                    ${escapeHTML(
+                        customer.phone ||
+                        "—"
+                    )}
+
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Delivery Address:
+                    </strong>
+
+                    ${escapeHTML(
+                        customer.delivery_address ||
+                        "—"
+                    )}
+
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Orders:
+                    </strong>
+
+                    ${customerOrders.length}
+
+                </p>
+
+
+                <p>
+
+                    <strong>
+                        Customer Since:
+                    </strong>
+
+                    ${formatDate(
+                        customer.created_at
+                    )}
+
+                </p>
+
+            `;
+
+            adminCustomers.appendChild(
+                card
+            );
+
+        }
+    );
 }
 
 
@@ -2735,7 +3383,6 @@ document
                     const sectionId =
                         button.dataset.section;
 
-
                     document
                         .querySelectorAll(
                             ".nav-item"
@@ -2747,11 +3394,9 @@ document
                                 )
                         );
 
-
                     button.classList.add(
                         "active"
                     );
-
 
                     document
                         .querySelectorAll(
@@ -2764,29 +3409,49 @@ document
                                 )
                         );
 
-
                     const section =
                         document.getElementById(
                             sectionId
                         );
 
-
                     if (section) {
-
                         section.classList.add(
                             "active"
                         );
-
                     }
-
 
                     if (pageTitle) {
 
-                        pageTitle.textContent =
+                        if (
                             sectionId ===
                             "productsSection"
-                                ? "Products"
-                                : "Dashboard";
+                        ) {
+
+                            pageTitle.textContent =
+                                "Products";
+
+                        } else if (
+                            sectionId ===
+                            "ordersSection"
+                        ) {
+
+                            pageTitle.textContent =
+                                "Orders";
+
+                        } else if (
+                            sectionId ===
+                            "customersSection"
+                        ) {
+
+                            pageTitle.textContent =
+                                "Customers";
+
+                        } else {
+
+                            pageTitle.textContent =
+                                "Dashboard";
+
+                        }
 
                     }
 
@@ -2806,7 +3471,6 @@ const addProductButton =
         "addProductButton"
     );
 
-
 if (addProductButton) {
 
     addProductButton.addEventListener(
@@ -2822,7 +3486,6 @@ const dashboardAddProduct =
         "dashboardAddProduct"
     );
 
-
 if (dashboardAddProduct) {
 
     dashboardAddProduct.addEventListener(
@@ -2834,13 +3497,9 @@ if (dashboardAddProduct) {
                     '[data-section="productsSection"]'
                 );
 
-
             if (productsNav) {
-
                 productsNav.click();
-
             }
-
 
             openAddProduct();
 
@@ -2869,6 +3528,36 @@ if (adminStatusFilter) {
     adminStatusFilter.addEventListener(
         "change",
         renderAdminProducts
+    );
+
+}
+
+
+if (orderSearch) {
+
+    orderSearch.addEventListener(
+        "input",
+        renderAdminOrders
+    );
+
+}
+
+
+if (orderStatusFilter) {
+
+    orderStatusFilter.addEventListener(
+        "change",
+        renderAdminOrders
+    );
+
+}
+
+
+if (customerSearch) {
+
+    customerSearch.addEventListener(
+        "input",
+        renderAdminCustomers
     );
 
 }
